@@ -6,66 +6,103 @@
     <title>Ayajuthem Conversation Learner</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
+        /* GLOBAL FONTS & COLORS */
         :root {
             --primary: #2c3e50;
-            --accent: #27ae60; /* Green for 'Go/Next' */
+            --accent: #27ae60;
             --light: #ecf0f1;
             --speaker-a: #e8f6f3;
             --speaker-b: #fef9e7;
-            --recall-hidden: #bdc3c7;
-            --step-inactive: #ddd;
             --step-active: #3498db;
+            --blur-bg: #dfe6e9;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f4f7f6; color: #333; }
+        /* Enforce Segoe UI Everywhere */
+        body, button, select, input, h1, h2, h3, div, span {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+        }
+
+        body { margin: 0; padding: 0; background: #f4f7f6; color: #333; }
         
-        /* Layout */
         .container { max-width: 800px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; }
         header { background: var(--primary); color: white; padding: 1rem; text-align: center; border-radius: 0 0 8px 8px; margin-bottom: 20px; }
         
-        /* File Selector */
-        #lesson-select { padding: 12px; width: 100%; margin-bottom: 20px; font-size: 1rem; border: 2px solid #dfe6e9; border-radius: 5px; }
+        /* CONTROLS */
+        select { padding: 12px; width: 100%; margin-bottom: 20px; font-size: 1rem; border: 2px solid #dfe6e9; border-radius: 5px; }
 
-        /* Stepper (Visual Progress) */
-        .stepper { display: flex; justify-content: space-between; margin-bottom: 20px; display: none; /* Hidden until lesson starts */ }
-        .step { flex: 1; text-align: center; font-size: 0.85rem; padding: 10px; background: var(--step-inactive); color: #7f8c8d; position: relative; }
-        .step:first-child { border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
-        .step:last-child { border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
-        .step.active { background: var(--step-active); color: white; font-weight: bold; }
+        /* STEPPER */
+        .stepper { display: flex; justify-content: space-between; margin-bottom: 20px; display: none; }
+        .step { flex: 1; text-align: center; font-size: 0.85rem; padding: 10px; background: #ddd; color: #7f8c8d; }
+        .step:first-child { border-radius: 20px 0 0 20px; }
+        .step:last-child { border-radius: 0 20px 20px 0; }
+        .step.active { background: var(--step-active); color: white; font-weight: 600; }
         .step.completed { background: var(--primary); color: white; }
 
-        /* Narrator Box */
-        #narrator-box { background: #34495e; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem; display: flex; align-items: center; gap: 15px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        /* NARRATOR */
+        #narrator-box { background: #34495e; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem; display: none; align-items: center; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .tts-icon { font-size: 1.8rem; }
 
-        /* Content Area */
-        #app-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-grow: 1; position: relative; display: flex; flex-direction: column; }
+        /* MAIN CONTENT CARD */
+        #app-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-grow: 1; display: flex; flex-direction: column; }
 
-        /* Chat View (Listen Phase) */
+        /* LISTEN MODE STYLES */
         .chat-container { flex-grow: 1; margin-bottom: 20px; }
         .chat-row { margin-bottom: 15px; padding: 10px 15px; border-radius: 15px; width: 85%; position: relative; }
-        .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-bottom-left-radius: 2px; }
-        .speaker-B { background-color: var(--speaker-b); margin-left: auto; border-bottom-right-radius: 2px; }
-        .speaker-label { font-size: 0.75em; font-weight: bold; color: #95a5a6; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+        .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-bottom-left-radius: 2px; border-left: 4px solid #1abc9c; }
+        .speaker-B { background-color: var(--speaker-b); margin-left: auto; border-bottom-right-radius: 2px; border-right: 4px solid #f1c40f; }
+        .speaker-label { font-size: 0.7em; font-weight: 700; color: #95a5a6; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Card View (Repeat/Recall Phases) */
+        /* REPEAT/RECALL CARD STYLES */
         .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; flex-grow: 1; }
-        .native-text { font-size: 2rem; color: var(--primary); margin: 20px 0; font-weight: 500; }
-        .translation { font-size: 1.3rem; color: #7f8c8d; font-style: italic; margin-bottom: 20px; min-height: 1.5em;}
         
-        .blur-reveal { background: var(--recall-hidden); color: transparent; cursor: pointer; padding: 5px 10px; border-radius: 4px; user-select: none; transition: all 0.3s; }
-        .blur-reveal:hover { background: var(--step-active); color: rgba(255,255,255,0.5); }
-        .blur-reveal.revealed { background: transparent; color: #7f8c8d; cursor: default; }
+        /* The Hidden Box Container */
+        .hidden-content-box {
+            background: transparent;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            width: 100%;
+        }
 
-        /* Audio Styles */
-        audio { width: 100%; max-width: 400px; margin-top: 10px; }
+        /* State: Hidden */
+        .hidden-content-box.obscured {
+            background: var(--blur-bg);
+            user-select: none;
+        }
+        .hidden-content-box.obscured .native-text,
+        .hidden-content-box.obscured .translation {
+            color: transparent; /* Make text invisible */
+            text-shadow: 0 0 15px rgba(0,0,0,0.1); /* Blur effect */
+        }
+        
+        /* State: Revealed */
+        .hidden-content-box.revealed {
+            background: transparent;
+            cursor: default;
+        }
 
-        /* Big Main Button */
+        /* Text Styles */
+        .native-text { font-size: 2rem; color: var(--primary); margin: 10px 0; font-weight: 600; }
+        .translation { font-size: 1.3rem; color: #7f8c8d; font-style: italic; }
+
+        /* Subtle Hint Text */
+        .reveal-hint {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #95a5a6;
+            margin-bottom: 8px;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.3s;
+        }
+        .reveal-hint.visible { opacity: 1; }
+
+        /* BUTTONS */
         .main-action-container { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; text-align: center; }
-        .big-btn { background: var(--accent); color: white; border: none; padding: 15px 40px; border-radius: 30px; cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: transform 0.1s; box-shadow: 0 4px 0 #1e8449; }
-        .big-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #1e8449; }
-        .big-btn:hover { background: #2ecc71; }
-        .big-btn.secondary { background: #95a5a6; box-shadow: 0 4px 0 #7f8c8d; margin-right: 10px;}
+        .big-btn { background: var(--accent); color: white; border: none; padding: 15px 40px; border-radius: 30px; cursor: pointer; font-size: 1.1rem; font-weight: 600; box-shadow: 0 4px 0 #1e8449; transition: transform 0.1s; }
+        .big-btn:active { transform: translateY(4px); box-shadow: none; }
+        .big-btn.secondary { background: #95a5a6; box-shadow: 0 4px 0 #7f8c8d; margin-right: 10px; }
 
     </style>
 </head>
@@ -78,8 +115,8 @@
 <div class="container">
     
     <select id="lesson-select" onchange="initLesson(this.value)">
-        <option value="" disabled selected>Choose a Topic to Begin...</option>
-        </select>
+        <option value="" disabled selected>Choose a Topic...</option>
+    </select>
 
     <div id="stepper" class="stepper">
         <div id="step-goals" class="step">1. Goals</div>
@@ -89,13 +126,13 @@
     </div>
 
     <div id="narrator-box">
-        <span class="tts-icon"></span>
-        <span id="narrator-text">Select a lesson to start.</span>
+        <span class="tts-icon">👩‍🏫</span>
+        <span id="narrator-text"></span>
     </div>
 
     <div id="app-content">
         <div style="text-align:center; color:#777; margin-top: 50px;">
-            Please select a topic from the dropdown above.
+            Please select a topic above.
         </div>
     </div>
 </div>
@@ -103,16 +140,17 @@
 <script>
     // --- CONFIGURATION ---
     const lessonManifest = [
-        "01_Introductions.csv",
-        "02_Test.csv",
-        "03_Wow.csv"
+        "01_Greetings.csv",
+        "02_Food.csv",
+        "03_Family.csv"
     ];
 
     // --- STATE ---
     let state = {
-        data: [],
+        allData: [],      // Contains Everything (type 'c' and 'r')
+        drillData: [],    // Contains ONLY type 'r'
         title: "",
-        phase: null, // 'goals', 'listen', 'repeat', 'recall', 'finish'
+        phase: null, 
         slideIndex: 0
     };
 
@@ -122,7 +160,7 @@
         lessonManifest.forEach(filename => {
             const opt = document.createElement('option');
             opt.value = filename;
-            opt.innerText = filename.replace('.csv', '').replace(/_/g, ' ').substring(3); // Remove number prefix
+            opt.innerText = filename.replace('.csv', '').replace(/_/g, ' ').substring(3);
             selector.appendChild(opt);
         });
     };
@@ -131,22 +169,23 @@
         Papa.parse(filename, {
             download: true, header: true, skipEmptyLines: true,
             complete: (results) => {
-                state.data = results.data;
+                state.allData = results.data;
+                // Filter: 'r' rows are for drilling. 'c' rows are conversation context only.
+                state.drillData = results.data.filter(row => row.type && row.type.toLowerCase().trim() === 'r');
                 state.title = filename.replace('.csv', '').replace(/_/g, ' ').substring(3);
+                
                 document.getElementById('stepper').style.display = 'flex';
                 document.getElementById('narrator-box').style.display = 'flex';
-                
-                // Start at the beginning
                 transitionToPhase('goals');
             }
         });
     }
 
-    // --- CORE LOGIC: PHASES & NAVIGATION ---
+    // --- NAVIGATION LOGIC ---
 
     function transitionToPhase(newPhase) {
         state.phase = newPhase;
-        state.slideIndex = 0; // Reset slide index for new phase
+        state.slideIndex = 0; 
         updateStepperUI();
         render();
     }
@@ -154,11 +193,9 @@
     function updateStepperUI() {
         const phases = ['goals', 'listen', 'repeat', 'recall'];
         let passedActive = false;
-        
         phases.forEach(p => {
             const el = document.getElementById(`step-${p}`);
-            el.className = 'step'; // reset
-            
+            el.className = 'step'; 
             if (state.phase === p) {
                 el.classList.add('active');
                 passedActive = true;
@@ -168,36 +205,29 @@
         });
     }
 
-    // The Brain: Decides what happens when "Next" is clicked
     function handleNextAction() {
-        const totalSlides = state.data.length;
-
-        if (state.phase === 'goals') {
-            transitionToPhase('listen');
-        } 
-        else if (state.phase === 'listen') {
-            transitionToPhase('repeat');
-        }
+        // Determine which dataset we are using based on phase
+        const currentList = (state.phase === 'listen') ? state.allData : state.drillData;
+        
+        if (state.phase === 'goals') transitionToPhase('listen');
+        else if (state.phase === 'listen') transitionToPhase('repeat');
         else if (state.phase === 'repeat') {
-            if (state.slideIndex < totalSlides - 1) {
+            if (state.slideIndex < currentList.length - 1) {
                 state.slideIndex++;
-                render(); // Re-render current phase with new slide
+                render();
             } else {
                 transitionToPhase('recall');
             }
         }
         else if (state.phase === 'recall') {
-            if (state.slideIndex < totalSlides - 1) {
+            if (state.slideIndex < currentList.length - 1) {
                 state.slideIndex++;
                 render();
             } else {
                 transitionToPhase('finish');
             }
         }
-        else if (state.phase === 'finish') {
-            // Reset or reload
-            location.reload(); 
-        }
+        else if (state.phase === 'finish') location.reload();
     }
 
     function handlePrevAction() {
@@ -213,25 +243,26 @@
         const container = document.getElementById('app-content');
         const narratorEl = document.getElementById('narrator-text');
         
-        // 1. NARRATION LOGIC
+        // 1. Narrator & TTS
         let narration = "";
-        if (state.phase === 'goals') narration = `Welcome to the ${state.title} lesson. Here is what we will learn.`;
-        else if (state.phase === 'listen') narration = "First, just listen to the whole conversation. Don't worry about memorizing yet.";
+        if (state.phase === 'goals') narration = `Let's look at the goals for ${state.title}.`;
+        else if (state.phase === 'listen') narration = "Listen to the conversation. Notice the flow.";
         else if (state.phase === 'repeat') {
-            if(state.slideIndex === 0) narration = "Now, let's practice. Listen to the audio, then repeat it out loud.";
-            // Optional: Add row-specific narration here if it exists in CSV
+            if(state.slideIndex === 0) narration = "Now, listen and repeat exactly what you hear.";
+            // If current slide has specific narrator text, append it?
+            // Optional: if(state.drillData[state.slideIndex].narrator_text) ...
         }
         else if (state.phase === 'recall') {
-            if(state.slideIndex === 0) narration = "Challenge time. Listen to the audio and try to remember the meaning before revealing it.";
+            if(state.slideIndex === 0) narration = "Listen to the audio. Recall the words and meaning.";
         }
-        else if (state.phase === 'finish') narration = "Congratulations! You have completed this lesson.";
+        else if (state.phase === 'finish') narration = "Good job! Lesson complete.";
 
         if (narration && state.slideIndex === 0) {
             narratorEl.innerText = narration;
             speak(narration);
         }
 
-        // 2. CONTENT GENERATION
+        // 2. HTML Generation
         let html = "";
 
         // -- GOALS --
@@ -239,65 +270,76 @@
             html = `
                 <h2>Topic: ${state.title}</h2>
                 <ul style="font-size:1.1rem; line-height:1.8; margin-bottom:40px;">
-                    <li> <strong>Listen</strong> to native pronunciation.</li>
-                    <li> <strong>Repeat</strong> phrases to build muscle memory.</li>
-                    <li> <strong>Recall</strong> meanings to test your knowledge.</li>
+                    <li>There are <strong>${state.drillData.length}</strong> key phrases to learn.</li>
+                    <li>First, you will hear them in context.</li>
+                    <li>Then, you will practice speaking and recalling them.</li>
                 </ul>
                 <div class="main-action-container">
-                    <button class="big-btn" onclick="handleNextAction()">Start Listening &rarr;</button>
+                    <button class="big-btn" onclick="handleNextAction()">Start &rarr;</button>
                 </div>
             `;
         } 
         
-        // -- LISTEN (Chat View) --
+        // -- LISTEN (Shows ALL rows: 'c' + 'r') --
         else if (state.phase === 'listen') {
             html = `<div class="chat-container">`;
-            state.data.forEach(row => {
+            state.allData.forEach(row => {
                 const spClass = row.speaker.includes('A') ? 'speaker-A' : 'speaker-B';
+                // Highlight Review items slightly? Optional.
                 html += `
                     <div class="chat-row ${spClass}">
                         <span class="speaker-label">${row.speaker}</span>
                         <div style="font-size:1.1rem;">${row.ayajuthem}</div>
                         <div style="font-size:0.9rem; color:#666;">${row.english}</div>
-                        <audio controls src="${row.audio_url}" style="height:30px; margin-top:5px;"></audio>
+                        <audio controls src="${row.audio_url}" style="height:30px; margin-top:5px; width:100%;"></audio>
                     </div>
                 `;
             });
             html += `</div>
                 <div class="main-action-container">
-                    <button class="big-btn" onclick="handleNextAction()">Next: Practice Speaking &rarr;</button>
+                    <button class="big-btn" onclick="handleNextAction()">Next: Practice &rarr;</button>
                 </div>`;
         }
 
-        // -- REPEAT & RECALL (Slideshow Views) --
+        // -- REPEAT & RECALL (Shows ONLY 'r' rows) --
         else if (state.phase === 'repeat' || state.phase === 'recall') {
-            const row = state.data[state.slideIndex];
+            const row = state.drillData[state.slideIndex];
             const isRecall = state.phase === 'recall';
-            const isLastSlide = state.slideIndex === state.data.length - 1;
             
-            const transHtml = isRecall 
-                ? `<div class="translation blur-reveal" onclick="this.classList.add('revealed')">??? (Click to Reveal)<br><span style="font-size:0.8em">${row.english}</span></div>`
-                : `<div class="translation">${row.english}</div>`;
-
-            const nextBtnText = isLastSlide 
-                ? (isRecall ? "Finish Lesson" : "Next: Recall Challenge &rarr;") 
-                : "Next Phrase &rarr;";
+            // Logic for Hidden Box
+            let contentBoxClass = "hidden-content-box";
+            let hintClass = "reveal-hint";
+            let onClickAttr = "";
+            
+            if (isRecall) {
+                contentBoxClass += " obscured"; // Add blur/hide effect
+                hintClass += " visible";        // Show "Click to Reveal"
+                onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
+            }
 
             html = `
                 <div class="card-view">
-                    <div class="speaker-label" style="font-size:1rem; margin-bottom:10px;">${row.speaker}</div>
+                    <div class="speaker-label" style="font-size:1rem; margin-bottom:15px;">${row.speaker}</div>
                     
-                    <audio controls autoplay src="${row.audio_url}"></audio>
+                    <audio controls autoplay src="${row.audio_url}" style="margin-bottom:30px;"></audio>
                     
-                    <div class="native-text">${row.ayajuthem}</div>
-                    ${transHtml}
+                    <div class="${hintClass}">Click below to reveal</div>
+
+                    <div class="${contentBoxClass}" ${onClickAttr}>
+                        <div class="native-text">${row.ayajuthem}</div>
+                        <div class="translation">${row.english}</div>
+                    </div>
                     
-                    <div style="margin-top:10px; color:#ccc; font-size:0.8rem;">Phrase ${state.slideIndex + 1} / ${state.data.length}</div>
+                    <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">
+                        Phrase ${state.slideIndex + 1} / ${state.drillData.length}
+                    </div>
                 </div>
 
                 <div class="main-action-container">
                     ${state.slideIndex > 0 ? `<button class="big-btn secondary" onclick="handlePrevAction()">&larr;</button>` : ''}
-                    <button class="big-btn" onclick="handleNextAction()">${nextBtnText}</button>
+                    <button class="big-btn" onclick="handleNextAction()">
+                        ${(state.slideIndex === state.drillData.length - 1) ? "Next Phase" : "Next Phrase"} &rarr;
+                    </button>
                 </div>
             `;
         }
@@ -306,11 +348,11 @@
         else if (state.phase === 'finish') {
             html = `
                 <div style="text-align:center; margin-top:50px;">
-                    <h1 style="font-size:4rem;"></h1>
-                    <h2>Excellent Work!</h2>
-                    <p>You have completed the <strong>${state.title}</strong> module.</p>
+                    <h1 style="font-size:4rem;">🎉</h1>
+                    <h2>Complete!</h2>
+                    <p>You have reviewed all key phrases for <strong>${state.title}</strong>.</p>
                     <div class="main-action-container">
-                        <button class="big-btn" onclick="location.reload()">Pick New Topic</button>
+                        <button class="big-btn" onclick="location.reload()">Start Over</button>
                     </div>
                 </div>
             `;
@@ -319,7 +361,7 @@
         container.innerHTML = html;
     }
 
-    // --- UTILS ---
+    // --- TTS UTILS ---
     function speak(text) {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();
@@ -330,11 +372,8 @@
         if (fVoice) u.voice = fVoice;
         window.speechSynthesis.speak(u);
     }
-
     window.speechSynthesis.onvoiceschanged = () => {};
 </script>
 
 </body>
 </html>
-
-

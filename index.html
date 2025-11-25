@@ -89,7 +89,7 @@
     </div>
 
     <div id="narrator-box">
-        <span class="tts-icon">👩‍🏫</span>
+        <span class="tts-icon"></span>
         <span id="narrator-text">Select a lesson to start.</span>
     </div>
 
@@ -239,9 +239,9 @@
             html = `
                 <h2>Topic: ${state.title}</h2>
                 <ul style="font-size:1.1rem; line-height:1.8; margin-bottom:40px;">
-                    <li>👂 <strong>Listen</strong> to native pronunciation.</li>
-                    <li>🗣️ <strong>Repeat</strong> phrases to build muscle memory.</li>
-                    <li>🧠 <strong>Recall</strong> meanings to test your knowledge.</li>
+                    <li> <strong>Listen</strong> to native pronunciation.</li>
+                    <li> <strong>Repeat</strong> phrases to build muscle memory.</li>
+                    <li> <strong>Recall</strong> meanings to test your knowledge.</li>
                 </ul>
                 <div class="main-action-container">
                     <button class="big-btn" onclick="handleNextAction()">Start Listening &rarr;</button>
@@ -280,7 +280,7 @@
                 : `<div class="translation">${row.english}</div>`;
 
             const nextBtnText = isLastSlide 
-                ? (isRecall ? "Finish Lesson 🏆" : "Next: Recall Challenge &rarr;") 
+                ? (isRecall ? "Finish Lesson" : "Next: Recall Challenge &rarr;") 
                 : "Next Phrase &rarr;";
 
             html = `
@@ -306,7 +306,7 @@
         else if (state.phase === 'finish') {
             html = `
                 <div style="text-align:center; margin-top:50px;">
-                    <h1 style="font-size:4rem;">🎉</h1>
+                    <h1 style="font-size:4rem;"></h1>
                     <h2>Excellent Work!</h2>
                     <p>You have completed the <strong>${state.title}</strong> module.</p>
                     <div class="main-action-container">
@@ -336,4 +336,5 @@
 
 </body>
 </html>
+
 

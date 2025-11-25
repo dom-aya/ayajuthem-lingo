@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayajuthem Conversation Learner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --light: #ecf0f1;
+            --speaker-a: #e8f6f3; /* Light Greenish */
+            --speaker-b: #fef9e7; /* Light Yellowish */
+            --recall-hidden: #bdc3c7;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f4f7f6; color: #333; }
+        
+        /* Layout */
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        header { background: var(--primary); color: white; padding: 1rem; text-align: center; }
+        
+        /* Navigation */
+        #lesson-select { padding: 10px; width: 100%; margin-bottom: 20px; font-size: 1rem; }
+        .mode-nav { display: flex; justify-content: space-between; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .mode-btn { background: none; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; color: #7f8c8d; border-bottom: 3px solid transparent; }
+        .mode-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+
+        /* Content Area */
+        #app-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); min-height: 400px; position: relative; }
+
+        /* Phase 1: Listen (Chat View) */
+        .chat-row { margin-bottom: 15px; padding: 10px; border-radius: 10px; width: 80%; }
+        .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-left: 5px solid #1abc9c; }
+        .speaker-B { background-color: var(--speaker-b); margin-left: auto; border-right: 5px solid #f1c40f; }
+        .speaker-label { font-size: 0.8em; font-weight: bold; color: #777; margin-bottom: 5px; display: block; }
+
+        /* Phase 2/3: Repeat & Recall (Flashcard View) */
+        .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        .native-text { font-size: 2rem; color: var(--primary); margin: 20px 0; }
+        .translation { font-size: 1.2rem; color: #7f8c8d; font-style: italic; }
+        .blur-reveal { background: var(--recall-hidden); color: transparent; cursor: pointer; padding: 5px; border-radius: 4px; user-select: none; }
+        .blur-reveal:hover { background: var(--accent); color: white; }
+        .blur-reveal.revealed { background: transparent; color: #7f8c8d; }
+
+        /* Audio Controls */
+        audio { width: 100%; margin-top: 10px; }
+        .nav-controls { margin-top: 30px; display: flex; gap: 10px; }
+        button.action-btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+        button.action-btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+        /* Narrator Box */
+        #narrator-box { background: #34495e; color: white; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+        .tts-icon { font-size: 1.5rem; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Ayajuthem Conversation Lab</h1>
+</header>
+
+<div class="container">
+    <select id="lesson-select" onchange="loadLesson(this.value)">
+        <option value="" disabled selected>Select a Topic...</option>
+        </select>
+
+    <div class="mode-nav" id="mode-nav" style="display:none;">
+        <button class="mode-btn active" onclick="setMode('goals')">0. Goals</button>
+        <button class="mode-btn" onclick="setMode('listen')">1. Listen</button>
+        <button class="mode-btn" onclick="setMode('repeat')">2. Repeat</button>
+        <button class="mode-btn" onclick="setMode('recall')">3. Recall</button>
+    </div>
+
+    <div id="narrator-box" style="display:none;">
+        <span class="tts-icon">👩‍🏫</span>
+        <span id="narrator-text"></span>
+    </div>
+
+    <div id="app-content">
+        <p style="text-align:center; color:#777;">Please select a lesson to begin.</p>
+    </div>
+</div>
+
+<script>
+    // --- CONFIGURATION ---
+    // List your CSV files here. 
+    // Ideally, a server script would generate this, but for a static site, we list them manually.
+    const lessonManifest = [
+        "01_Introductions.csv"
+    ];
+
+    // --- STATE MANAGEMENT ---
+    let currentData = [];
+    let currentMode = 'goals';
+    let currentIndex = 0; // For slideshow modes
+    let lessonTitle = "";
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+        const selector = document.getElementById('lesson-select');
+        lessonManifest.forEach(filename => {
+            const opt = document.createElement('option');
+            opt.value = filename;
+            // Extract Intrudctions from "01_Introductions.csv"
+            const cleanName = filename.replace('.csv', '').replace(/_/g, ' ');
+            opt.innerText = cleanName;
+            selector.appendChild(opt);
+        });
+    };
+
+    // --- DATA LOADING ---
+    function loadLesson(filename) {
+        Papa.parse(filename, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                currentData = results.data;
+                lessonTitle = filename.replace('.csv', '').replace(/_/g, ' ').split(' ').slice(1).join(' '); // Remove number
+                document.getElementById('mode-nav').style.display = 'flex';
+                document.getElementById('narrator-box').style.display = 'flex';
+                setMode('goals');
+            },
+            error: function(err) {
+                alert("Error loading CSV: " + err.message);
+            }
+        });
+    }
+
+    // --- MODE SWITCHING ---
+    function setMode(mode) {
+        currentMode = mode;
+        currentIndex = 0; // Reset slide index
+        
+        // Update UI Buttons
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active'); // This might fail if called programmatically, handled below
+        
+        // Specific logic to highlight correct button if called via code
+        const buttons = document.querySelectorAll('.mode-btn');
+        const modeMap = {'goals':0, 'listen':1, 'repeat':2, 'recall':3};
+        if(buttons[modeMap[mode]]) buttons[modeMap[mode]].classList.add('active');
+
+        renderContent();
+    }
+
+    function renderContent() {
+        const container = document.getElementById('app-content');
+        const narratorEl = document.getElementById('narrator-text');
+        container.innerHTML = '';
+
+        // STOP any playing audio
+        window.speechSynthesis.cancel();
+
+        switch(currentMode) {
+            case 'goals':
+                narratorEl.innerText = "Welcome. Let's review the learning goals for this topic.";
+                tts(narratorEl.innerText);
+                
+                container.innerHTML = `
+                    <h2>Learning Goals: ${lessonTitle}</h2>
+                    <p>In this lesson, you will learn to:</p>
+                    <ul>
+                        <li>Understand the flow of a conversation about <strong>${lessonTitle}</strong>.</li>
+                        <li>Pronounce key phrases accurately.</li>
+                        <li>Recall meanings without visual translation cues.</li>
+                    </ul>
+                    <div style="text-align:center; margin-top:40px;">
+                        <button class="action-btn" onclick="setMode('listen')">Start Lesson &rarr;</button>
+                    </div>
+                `;
+                break;
+
+            case 'listen':
+                narratorEl.innerText = "Listen to the entire conversation. Notice who is speaking.";
+                tts(narratorEl.innerText);
+
+                currentData.forEach(row => {
+                    // Clean speaker class name
+                    const speakerClass = row.speaker.includes('A') ? 'speaker-A' : 'speaker-B';
+                    
+                    const html = `
+                        <div class="chat-row ${speakerClass}">
+                            <span class="speaker-label">${row.speaker}</span>
+                            <div class="native-text" style="font-size:1.2rem; margin: 5px 0;">${row.ayajuthem}</div>
+                            <div style="font-size:0.9rem; color:#555;">${row.english}</div>
+                            <audio controls src="${row.audio_url}"></audio>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+                break;
+
+            case 'repeat':
+                narratorEl.innerText = "Listen to the phrase, then repeat it aloud. Check your pronunciation.";
+                tts(narratorEl.innerText);
+                renderSlide(container, false); // false = show translation
+                break;
+
+            case 'recall':
+                narratorEl.innerText = "Listen to the audio. Try to recall the meaning before revealing it.";
+                tts(narratorEl.innerText);
+                renderSlide(container, true); // true = hide translation
+                break;
+        }
+    }
+
+    // --- SLIDESHOW LOGIC (Repeat & Recall) ---
+    function renderSlide(container, hideTranslation) {
+        if (!currentData[currentIndex]) return;
+        const row = currentData[currentIndex];
+
+        // Read the specific narrator text for this line if available
+        if(row.narrator_text && !hideTranslation) {
+             // Only narrate instructions on Repeat mode to avoid spoilers in Recall
+            // tts(row.narrator_text); 
+            // (Optional: Uncomment above if you want TTS on every slide change)
+        }
+
+        const translationHTML = hideTranslation 
+            ? `<div class="translation blur-reveal" onclick="this.classList.add('revealed')">??? (Click to Reveal) <br> ${row.english}</div>`
+            : `<div class="translation">${row.english}</div>`;
+
+        const html = `
+            <div class="card-view">
+                <div class="speaker-label" style="margin-bottom:20px;">${row.speaker}</div>
+                
+                <audio controls autoplay src="${row.audio_url}"></audio>
+                
+                <div class="native-text">${row.ayajuthem}</div>
+                
+                ${translationHTML}
+
+                <div class="nav-controls">
+                    <button class="action-btn" onclick="prevSlide()" ${currentIndex === 0 ? 'disabled' : ''}>&larr; Previous</button>
+                    <button class="action-btn" onclick="nextSlide()" ${currentIndex === currentData.length - 1 ? 'disabled' : ''}>Next &rarr;</button>
+                </div>
+                
+                <div style="margin-top:20px; color:#aaa; font-size:0.8rem;">Phrase ${currentIndex + 1} of ${currentData.length}</div>
+            </div>
+        `;
+        container.innerHTML = html;
+    }
+
+    function nextSlide() {
+        if (currentIndex < currentData.length - 1) {
+            currentIndex++;
+            renderContent(); // Re-renders based on current mode
+        }
+    }
+
+    function prevSlide() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            renderContent();
+        }
+    }
+
+    // --- TEXT TO SPEECH (TTS) ---
+    function tts(text) {
+        if (!window.speechSynthesis) return;
+        
+        // Cancel previous
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9; // Slightly slower for clarity
+        utterance.pitch = 1;
+
+        // Try to find a female voice
+        const voices = window.speechSynthesis.getVoices();
+        // Note: Voices load asynchronously in some browsers, might need an event listener in a prod app
+        const femaleVoice = voices.find(v => 
+            v.name.includes('Female') || 
+            v.name.includes('Google US English') || 
+            v.name.includes('Samantha')
+        );
+
+        if (femaleVoice) {
+            utterance.voice = femaleVoice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+    }
+    
+    // Ensure voices are loaded (Chrome quirk)
+    window.speechSynthesis.onvoiceschanged = () => {};
+
+</script>
+
+</body>
+</html>

@@ -1,9 +1,10 @@
 ﻿type,audio_url,english,ayajuthem,speaker,narrator_text
 c,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,Hello friend,aǰɛcxʷot,Speaker A,Listen to the greeting.
 c,https://fv-media-uploads.s3.amazonaws.com/homalco/51a83aa2-51ed-4f8e-84fd-abf8d5a3102a/thank%20you%20mp3.mp3,How are you?,ʔimot,Speaker B,
-r,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,I am good,ʔimot,Speaker B,Now practice this key phrase.
+p,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,I am good,ʔimot,Speaker B,Now practice this key phrase.
 r,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,I am good,ʔimot,Speaker B,What about this one?
-r,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,I am good,ʔimot,Speaker B,This one will stump you.
+p,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,I am good,ʔimot,Speaker B,This one will stump you.
 r,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,I am good,ʔimot,Speaker B,Nice try.
 r,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,I am good,ʔimot,Speaker B,Ok you're good
 r,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,I am good,ʔimot,Speaker B,Wow.
+

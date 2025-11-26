@@ -47,13 +47,13 @@
 
         /* LISTEN MODE STYLES */
         .chat-container { flex-grow: 1; margin-bottom: 20px; }
-        .chat-row { margin-bottom: 15px; padding: 15px 20px; border-radius: 8px; width: 85%; position: relative; border: 1px solid rgba(0,0,0,0.05); }
+        .chat-row { margin-bottom: 15px; padding: 15px 20px; border-radius: 8px; width: 90%; position: relative; border: 1px solid rgba(0,0,0,0.05); }
         .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-left: 4px solid #1abc9c; }
         .speaker-B { background-color: var(--speaker-b); margin-left: auto; border-right: 4px solid #f1c40f; }
         .speaker-label { font-size: 0.7em; font-weight: 700; color: #95a5a6; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 1px; }
 
         /* REPEAT/RECALL CARD STYLES */
-        .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; flex-grow: 1; }
+        .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; flex-grow: 1; width: 100%; }
         
         /* The Hidden Box Container */
         .hidden-content-box {
@@ -72,8 +72,8 @@
         }
         .hidden-content-box.obscured .native-text,
         .hidden-content-box.obscured .translation {
-            color: transparent; /* Make text invisible */
-            text-shadow: 0 0 15px rgba(0,0,0,0.1); /* Blur effect */
+            color: transparent; 
+            text-shadow: 0 0 15px rgba(0,0,0,0.1); 
         }
         
         /* State: Revealed */
@@ -93,10 +93,14 @@
             letter-spacing: 1.5px;
             color: #95a5a6;
             margin-bottom: 8px;
-            opacity: 0; /* Hidden by default */
+            opacity: 0; 
             transition: opacity 0.3s;
         }
         .reveal-hint.visible { opacity: 1; }
+
+        /* Media Container */
+        .media-container { width: 100%; margin-bottom: 20px; max-width: 500px; }
+        iframe { border-radius: 8px; }
 
         /* BUTTONS */
         .main-action-container { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; text-align: center; }
@@ -169,12 +173,8 @@
         Papa.parse(filename, {
             download: true, header: true, skipEmptyLines: true,
             complete: (results) => {
-                // SEPARATION LOGIC
-                // 'c' = Conversation only
-                // 'r' = Review/Repeat/Recall only
                 state.listenData = results.data.filter(row => row.type && row.type.toLowerCase().trim() === 'c');
                 state.drillData = results.data.filter(row => row.type && row.type.toLowerCase().trim() === 'r');
-                
                 state.title = filename.replace('.csv', '').replace(/_/g, ' ').substring(3);
                 
                 document.getElementById('stepper').style.display = 'flex';
@@ -184,8 +184,7 @@
         });
     }
 
-    // --- NAVIGATION LOGIC ---
-
+    // --- NAVIGATION ---
     function transitionToPhase(newPhase) {
         state.phase = newPhase;
         state.slideIndex = 0; 
@@ -237,30 +236,78 @@
         }
     }
 
-    // --- RENDERING ---
+    // --- MEDIA HELPER (Youtube detection) ---
+    function getYoutubeId(url) {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
 
+    function renderMedia(url, autoPlay = false) {
+        if (!url) return '';
+        const ytId = getYoutubeId(url);
+        
+        if (ytId) {
+            // It is YouTube
+            // Note: Autoplay requires user interaction with the document first in most browsers.
+            const params = autoPlay ? "?autoplay=1&rel=0" : "?rel=0";
+            return `
+                <div class="media-container">
+                    <iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}${params}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>`;
+        } else {
+            // It is standard Audio
+            const autoAttr = autoPlay ? "autoplay" : "";
+            return `
+                <div class="media-container">
+                    <audio controls ${autoAttr} src="${url}" style="width:100%;"></audio>
+                </div>`;
+        }
+    }
+
+    // --- RENDERING ---
     function render() {
         const container = document.getElementById('app-content');
         const narratorEl = document.getElementById('narrator-text');
         
-        // 1. Narrator & TTS
-        let narration = "";
-        if (state.phase === 'goals') narration = `Let's review the goals for the topic: ${state.title}.`;
-        else if (state.phase === 'listen') narration = "Listen to the conversation.";
-        else if (state.phase === 'repeat') {
-            if(state.slideIndex === 0) narration = "Now, listen and repeat the phrase.";
-        }
-        else if (state.phase === 'recall') {
-            if(state.slideIndex === 0) narration = "Listen to the audio. Try to recall the meaning before revealing it.";
-        }
-        else if (state.phase === 'finish') narration = "Lesson complete.";
+        // --- 1. TTS Logic ---
+        let textToSpeak = "";
 
-        if (narration && state.slideIndex === 0) {
-            narratorEl.innerText = narration;
-            speak(narration);
+        if (state.phase === 'goals') {
+            textToSpeak = `Let's review the goals for the topic: ${state.title}.`;
+        } 
+        else if (state.phase === 'listen') {
+            textToSpeak = "Listen to the conversation.";
+        } 
+        else if (state.phase === 'finish') {
+            textToSpeak = "Lesson complete.";
+        }
+        else if (state.phase === 'repeat' || state.phase === 'recall') {
+            const row = state.drillData[state.slideIndex];
+            
+            // PRIORITY: If row has specific narrator text, use that.
+            if (row && row.narrator_text && row.narrator_text.trim().length > 0) {
+                textToSpeak = row.narrator_text;
+            } 
+            // FALLBACK: Generic intro on first slide only
+            else if (state.slideIndex === 0) {
+                if (state.phase === 'repeat') textToSpeak = "Now, listen and repeat the phrase.";
+                if (state.phase === 'recall') textToSpeak = "Listen to the audio. Try to recall the meaning before revealing it.";
+            }
         }
 
-        // 2. HTML Generation
+        // Only speak if we have text
+        if (textToSpeak) {
+            narratorEl.innerText = textToSpeak;
+            speak(textToSpeak);
+        } else {
+            // Keep previous text but don't speak, or clear it
+             narratorEl.innerText = "...";
+        }
+
+
+        // --- 2. HTML Generation ---
         let html = "";
 
         // -- GOALS --
@@ -278,7 +325,7 @@
             `;
         } 
         
-        // -- LISTEN (Shows ONLY 'c' rows) --
+        // -- LISTEN --
         else if (state.phase === 'listen') {
             html = `<div class="chat-container">`;
             
@@ -288,12 +335,14 @@
 
             state.listenData.forEach(row => {
                 const spClass = row.speaker.includes('A') ? 'speaker-A' : 'speaker-B';
+                const mediaHtml = renderMedia(row.audio_url, false);
+
                 html += `
                     <div class="chat-row ${spClass}">
                         <span class="speaker-label">${row.speaker}</span>
-                        <div style="font-size:1.1rem;">${row.ayajuthem}</div>
-                        <div style="font-size:0.9rem; color:#666;">${row.english}</div>
-                        <audio controls src="${row.audio_url}" style="height:30px; margin-top:5px; width:100%;"></audio>
+                        <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
+                        <div style="font-size:0.9rem; color:#666; margin-bottom: 10px;">${row.english}</div>
+                        ${mediaHtml}
                     </div>
                 `;
             });
@@ -303,7 +352,7 @@
                 </div>`;
         }
 
-        // -- REPEAT & RECALL (Shows ONLY 'r' rows) --
+        // -- REPEAT & RECALL --
         else if (state.phase === 'repeat' || state.phase === 'recall') {
             
             if(state.drillData.length === 0) {
@@ -320,16 +369,19 @@
             let onClickAttr = "";
             
             if (isRecall) {
-                contentBoxClass += " obscured"; // Add blur/hide effect
-                hintClass += " visible";        // Show "Click to Reveal"
+                contentBoxClass += " obscured"; 
+                hintClass += " visible";
                 onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
             }
+
+            // Render Media (Autoplay enabled)
+            const mediaHtml = renderMedia(row.audio_url, true);
 
             html = `
                 <div class="card-view">
                     <div class="speaker-label" style="font-size:1rem; margin-bottom:15px;">${row.speaker}</div>
                     
-                    <audio controls autoplay src="${row.audio_url}" style="margin-bottom:30px;"></audio>
+                    ${mediaHtml}
                     
                     <div class="${hintClass}">Click below to reveal</div>
 
@@ -356,7 +408,7 @@
         else if (state.phase === 'finish') {
             html = `
                 <div style="text-align:center; margin-top:50px;">
-                    <h1 style="font-size:4rem; margin-bottom: 20px;">Done</h1>
+                    <h1 style="font-size:3rem; margin-bottom: 20px;">Done</h1>
                     <h2>Lesson Complete</h2>
                     <p>You have reviewed all key phrases for <strong>${state.title}</strong>.</p>
                     <div class="main-action-container">

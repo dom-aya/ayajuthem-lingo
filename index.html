@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ayalingo</title>
+    <title>Ayajuthem Conversation Learner</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         /* GLOBAL FONTS & COLORS */
@@ -47,43 +47,30 @@
         /* MAIN CONTENT CARD */
         #app-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-grow: 1; display: flex; flex-direction: column; }
 
-        /* LISTEN MODE STYLES */
+        /* LISTEN MODE (Type 'c') STYLES */
         .chat-container { flex-grow: 1; margin-bottom: 20px; }
         .chat-row { margin-bottom: 15px; padding: 15px 20px; border-radius: 8px; width: 90%; position: relative; border: 1px solid rgba(0,0,0,0.05); }
         .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-left: 4px solid #1abc9c; }
         .speaker-B { background-color: var(--speaker-b); margin-left: auto; border-right: 4px solid #f1c40f; }
         .speaker-label { font-size: 0.7em; font-weight: 700; color: #95a5a6; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* SYSTEM NOTE (Type 'n' in Listen Mode) */
-        .system-note {
-            text-align: center;
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            color: #636e72;
-            padding: 10px;
-            border-radius: 6px;
-            margin: 20px auto;
-            width: 80%;
-            font-size: 0.9rem;
-            font-style: italic;
-        }
-
-        /* CARD VIEW (Slides) */
+        /* SEQUENCE STYLES (Types p, n, r) */
         .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; flex-grow: 1; width: 100%; }
         
-        /* NARRATOR SLIDE (Type 'n' in Card Mode) */
+        /* NOTE SLIDE (Type 'n') */
         .narrator-slide {
-            background: var(--speaker-a);
-            border-left: 5px solid var(--step-active);
+            background: #fff;
+            border-left: 6px solid var(--step-active);
             padding: 30px;
-            border-radius: 8px;
-            font-size: 1.2rem;
+            border-radius: 4px;
+            font-size: 1.3rem;
             line-height: 1.6;
             color: var(--primary);
             max-width: 600px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        /* The Hidden Box Container */
+        /* CONTENT BOX (Type 'p' and 'r') */
         .hidden-content-box {
             background: transparent;
             border-radius: 8px;
@@ -93,7 +80,7 @@
             width: 100%;
         }
 
-        /* State: Hidden */
+        /* State: Hidden (for 'r') */
         .hidden-content-box.obscured {
             background: var(--blur-bg);
             user-select: none;
@@ -110,11 +97,9 @@
             cursor: default;
         }
 
-        /* Text Styles */
         .native-text { font-size: 2rem; color: var(--primary); margin: 10px 0; font-weight: 600; }
         .translation { font-size: 1.3rem; color: #7f8c8d; font-style: italic; }
 
-        /* Subtle Hint Text */
         .reveal-hint {
             font-size: 0.75rem;
             text-transform: uppercase;
@@ -126,7 +111,7 @@
         }
         .reveal-hint.visible { opacity: 1; }
 
-        /* Media Container */
+        /* MEDIA */
         .media-container { width: 100%; margin-bottom: 20px; max-width: 500px; }
         iframe { border-radius: 8px; }
 
@@ -141,7 +126,7 @@
 <body>
 
 <header>
-    <h2>Ayalingo</h2>
+    <h2>Ayajuthem Conversation Lab</h2>
 </header>
 
 <div class="container">
@@ -152,9 +137,8 @@
 
     <div id="stepper" class="stepper">
         <div id="step-goals" class="step">1. Goals</div>
-        <div id="step-listen" class="step">2. Listen</div>
-        <div id="step-repeat" class="step">3. Repeat</div>
-        <div id="step-recall" class="step">4. Recall</div>
+        <div id="step-conversation" class="step">2. Conversation</div>
+        <div id="step-practice" class="step">3. Practice</div>
     </div>
 
     <div id="narrator-box">
@@ -173,16 +157,16 @@
     // --- CONFIGURATION ---
     const lessonManifest = [
         "01_Greetings.csv",
-        "02_Story.csv",
+        "02_Food.csv",
         "03_Family.csv"
     ];
 
     // --- STATE ---
     let state = {
-        listenData: [], // Type 'c' + 'n'
-        drillData: [],  // Type 'r' + 'n'
+        conversationData: [], // Type 'c'
+        sequenceData: [],     // Types 'p', 'n', 'r' (Ordered)
         title: "",
-        phase: null, 
+        phase: null, // 'goals', 'conversation', 'practice', 'finish'
         slideIndex: 0
     };
 
@@ -201,19 +185,15 @@
         Papa.parse(filename, {
             download: true, header: true, skipEmptyLines: true,
             complete: (results) => {
-                // LOGIC: 
-                // 'n' (narrator notes) should appear in BOTH flows to provide context
-                // 'c' (conversation) only in listenData
-                // 'r' (review) only in drillData
+                const raw = results.data;
                 
-                state.listenData = results.data.filter(row => {
+                // 1. Extract Conversation ('c')
+                state.conversationData = raw.filter(row => row.type && row.type.toLowerCase().trim() === 'c');
+                
+                // 2. Extract Guided Sequence ('p', 'n', 'r') preserving CSV order
+                state.sequenceData = raw.filter(row => {
                     const t = row.type ? row.type.toLowerCase().trim() : '';
-                    return t === 'c' || t === 'n';
-                });
-
-                state.drillData = results.data.filter(row => {
-                    const t = row.type ? row.type.toLowerCase().trim() : '';
-                    return t === 'r' || t === 'n';
+                    return ['p', 'n', 'r'].includes(t);
                 });
 
                 state.title = filename.replace('.csv', '').replace(/_/g, ' ').substring(3);
@@ -234,7 +214,7 @@
     }
 
     function updateStepperUI() {
-        const phases = ['goals', 'listen', 'repeat', 'recall'];
+        const phases = ['goals', 'conversation', 'practice'];
         let passedActive = false;
         phases.forEach(p => {
             const el = document.getElementById(`step-${p}`);
@@ -242,35 +222,34 @@
             if (state.phase === p) {
                 el.classList.add('active');
                 passedActive = true;
-            } else if (!passedActive) {
+            } else if (!passedActive && state.phase !== 'finish') {
+                el.classList.add('completed');
+            } else if (state.phase === 'finish') {
                 el.classList.add('completed');
             }
         });
     }
 
     function handleNextAction() {
-        // Determine dataset
-        const currentData = (state.phase === 'listen') ? state.listenData : state.drillData;
-
-        if (state.phase === 'goals') transitionToPhase('listen');
-        else if (state.phase === 'listen') transitionToPhase('repeat');
-        else if (state.phase === 'repeat') {
-            if (state.slideIndex < state.drillData.length - 1) {
-                state.slideIndex++;
-                render();
-            } else {
-                transitionToPhase('recall');
-            }
+        if (state.phase === 'goals') {
+            // Skip conversation phase if no 'c' rows exist
+            if(state.conversationData.length > 0) transitionToPhase('conversation');
+            else transitionToPhase('practice');
         }
-        else if (state.phase === 'recall') {
-            if (state.slideIndex < state.drillData.length - 1) {
+        else if (state.phase === 'conversation') {
+            transitionToPhase('practice');
+        }
+        else if (state.phase === 'practice') {
+            if (state.slideIndex < state.sequenceData.length - 1) {
                 state.slideIndex++;
                 render();
             } else {
                 transitionToPhase('finish');
             }
         }
-        else if (state.phase === 'finish') location.reload();
+        else if (state.phase === 'finish') {
+            location.reload();
+        }
     }
 
     function handlePrevAction() {
@@ -312,138 +291,102 @@
         const container = document.getElementById('app-content');
         const narratorEl = document.getElementById('narrator-text');
         
-        // --- 1. TTS Logic ---
         let textToSpeak = "";
-
-        if (state.phase === 'goals') {
-            textToSpeak = `Let's review the goals for the topic: ${state.title}.`;
-        } 
-        else if (state.phase === 'listen') {
-            textToSpeak = "Listen to the conversation.";
-        } 
-        else if (state.phase === 'finish') {
-            textToSpeak = "Lesson complete.";
-        }
-        else if (state.phase === 'repeat' || state.phase === 'recall') {
-            const row = state.drillData[state.slideIndex];
-            
-            if (row) {
-                // If it's a Narrator Slide (type 'n'), read the whole text
-                if (row.type === 'n') {
-                    textToSpeak = row.narrator_text;
-                }
-                // If it's a drill slide (type 'r') and has specific text
-                else if (row.narrator_text && row.narrator_text.trim().length > 0) {
-                    textToSpeak = row.narrator_text;
-                } 
-                // Fallback for first slide only
-                else if (state.slideIndex === 0) {
-                    if (state.phase === 'repeat') textToSpeak = "Now, listen and repeat the phrase.";
-                    if (state.phase === 'recall') textToSpeak = "Listen to the audio. Try to recall the meaning.";
-                }
-            }
-        }
-
-        if (textToSpeak) {
-            narratorEl.innerText = textToSpeak;
-            speak(textToSpeak);
-        } else {
-             narratorEl.innerText = "...";
-        }
-
-
-        // --- 2. HTML Generation ---
         let html = "";
 
-        // -- GOALS --
+        // --- 1. GOALS PHASE ---
         if (state.phase === 'goals') {
-            const drillCount = state.drillData.filter(d => d.type === 'r').length;
+            textToSpeak = `Welcome to the lesson on ${state.title}.`;
+            const drillCount = state.sequenceData.filter(d => d.type === 'p' || d.type === 'r').length;
+            
             html = `
                 <h2>Topic: ${state.title}</h2>
                 <ul style="font-size:1.1rem; line-height:1.8; margin-bottom:40px;">
-                    <li>There are <strong>${drillCount}</strong> key phrases to review.</li>
-                    <li>First, you will hear the conversation flow.</li>
-                    <li>Then, you will practice speaking and recalling specific phrases.</li>
+                    <li><strong>Step 1:</strong> Conversation. Hear the language in context.</li>
+                    <li><strong>Step 2:</strong> Practice. There are ${state.sequenceData.length} guided steps (learning, notes, and recall).</li>
                 </ul>
                 <div class="main-action-container">
-                    <button class="big-btn" onclick="handleNextAction()">Start</button>
+                    <button class="big-btn" onclick="handleNextAction()">Start Lesson</button>
                 </div>
             `;
         } 
         
-        // -- LISTEN --
-        else if (state.phase === 'listen') {
+        // --- 2. CONVERSATION PHASE (Type 'c' Only) ---
+        else if (state.phase === 'conversation') {
+            textToSpeak = "Listen to the conversation.";
+            
             html = `<div class="chat-container">`;
             
-            if(state.listenData.length === 0) {
-                html += `<div style="text-align:center; color:#999; margin-top:20px;">No conversation items found.</div>`;
-            }
+            state.conversationData.forEach(row => {
+                const spClass = row.speaker.includes('A') ? 'speaker-A' : 'speaker-B';
+                const mediaHtml = renderMedia(row.audio_url, false);
 
-            state.listenData.forEach(row => {
-                // Render Note ('n') or Chat ('c')
-                if (row.type === 'n') {
-                    html += `<div class="system-note">${row.narrator_text}</div>`;
-                } else {
-                    const spClass = row.speaker.includes('A') ? 'speaker-A' : 'speaker-B';
-                    const mediaHtml = renderMedia(row.audio_url, false);
-
-                    html += `
-                        <div class="chat-row ${spClass}">
-                            <span class="speaker-label">${row.speaker}</span>
-                            <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
-                            <div style="font-size:0.9rem; color:#666; margin-bottom: 10px;">${row.english}</div>
-                            ${mediaHtml}
-                        </div>
-                    `;
-                }
+                html += `
+                    <div class="chat-row ${spClass}">
+                        <span class="speaker-label">${row.speaker}</span>
+                        <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
+                        <div style="font-size:0.9rem; color:#666; margin-bottom: 10px;">${row.english}</div>
+                        ${mediaHtml}
+                    </div>
+                `;
             });
             html += `</div>
                 <div class="main-action-container">
-                    <button class="big-btn" onclick="handleNextAction()">Next Step</button>
+                    <button class="big-btn" onclick="handleNextAction()">Start Practice Sequence</button>
                 </div>`;
         }
 
-        // -- REPEAT & RECALL --
-        else if (state.phase === 'repeat' || state.phase === 'recall') {
+        // --- 3. PRACTICE PHASE (Interweaved 'p', 'n', 'r') ---
+        else if (state.phase === 'practice') {
             
-            if(state.drillData.length === 0) {
-                 container.innerHTML = `<div style="text-align:center;">No review items found. <br><button class="big-btn" onclick="handleNextAction()">Skip</button></div>`;
+            if(state.sequenceData.length === 0) {
+                 container.innerHTML = `<div style="text-align:center;">No practice items found. <br><button class="big-btn" onclick="handleNextAction()">Skip</button></div>`;
                  return;
             }
 
-            const row = state.drillData[state.slideIndex];
-            const isRecall = state.phase === 'recall';
+            const row = state.sequenceData[state.slideIndex];
+            const type = row.type.toLowerCase().trim();
+
+            // --- NARRATION LOGIC ---
+            if (row.narrator_text && row.narrator_text.trim().length > 0) {
+                textToSpeak = row.narrator_text;
+            } else {
+                // Fallbacks if CSV narrator_text is empty
+                if(type === 'n') textToSpeak = "Note.";
+                else if(type === 'r') textToSpeak = "Listen and Recall.";
+                else if(type === 'p') textToSpeak = "Listen and Repeat.";
+            }
+
+            // --- TYPE SPECIFIC RENDERING ---
             
-            // 2A. Render Narrator Slide ('n')
-            if (row.type === 'n') {
-                 html = `
+            // TYPE 'n': Note / Narrator Slide
+            if (type === 'n') {
+                html = `
                     <div class="card-view">
                         <div class="narrator-slide">
                             ${row.narrator_text}
                         </div>
-                        <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">Context Note</div>
+                        <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">Note</div>
                     </div>
-                    <div class="main-action-container">
-                        ${state.slideIndex > 0 ? `<button class="big-btn secondary" onclick="handlePrevAction()">Back</button>` : ''}
-                        <button class="big-btn" onclick="handleNextAction()">Next</button>
-                    </div>
-                 `;
-            } 
-            // 2B. Render Drill Slide ('r')
+                `;
+            }
+
+            // TYPE 'p' (Practice) or 'r' (Recall)
             else {
-                // Logic for Hidden Box
+                const isRecall = (type === 'r');
                 let contentBoxClass = "hidden-content-box";
                 let hintClass = "reveal-hint";
                 let onClickAttr = "";
-                
+
                 if (isRecall) {
-                    contentBoxClass += " obscured"; 
+                    contentBoxClass += " obscured";
                     hintClass += " visible";
                     onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
                 }
 
                 const mediaHtml = renderMedia(row.audio_url, true);
-
+                
+                // If it is 'p', we show text immediately. If 'r', we hide it.
                 html = `
                     <div class="card-view">
                         <div class="speaker-label" style="font-size:1rem; margin-bottom:15px;">${row.speaker}</div>
@@ -458,32 +401,44 @@
                         </div>
                         
                         <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">
-                            Item ${state.slideIndex + 1} / ${state.drillData.length}
+                            Step ${state.slideIndex + 1} of ${state.sequenceData.length}
                         </div>
-                    </div>
-
-                    <div class="main-action-container">
-                        ${state.slideIndex > 0 ? `<button class="big-btn secondary" onclick="handlePrevAction()">Back</button>` : ''}
-                        <button class="big-btn" onclick="handleNextAction()">
-                            ${(state.slideIndex === state.drillData.length - 1) ? "Next Phase" : "Next"}
-                        </button>
                     </div>
                 `;
             }
+
+            // Controls for all types in Practice phase
+            html += `
+                <div class="main-action-container">
+                    ${state.slideIndex > 0 ? `<button class="big-btn secondary" onclick="handlePrevAction()">Back</button>` : ''}
+                    <button class="big-btn" onclick="handleNextAction()">
+                        ${(state.slideIndex === state.sequenceData.length - 1) ? "Finish Lesson" : "Next"}
+                    </button>
+                </div>
+            `;
         }
 
-        // -- FINISH --
+        // --- 4. FINISH PHASE ---
         else if (state.phase === 'finish') {
+            textToSpeak = "Lesson complete.";
             html = `
                 <div style="text-align:center; margin-top:50px;">
                     <h1 style="font-size:3rem; margin-bottom: 20px;">Done</h1>
                     <h2>Lesson Complete</h2>
-                    <p>You have reviewed all key phrases for <strong>${state.title}</strong>.</p>
+                    <p>You have finished the <strong>${state.title}</strong> lesson.</p>
                     <div class="main-action-container">
-                        <button class="big-btn" onclick="location.reload()">Start Over</button>
+                        <button class="big-btn" onclick="location.reload()">Return to Menu</button>
                     </div>
                 </div>
             `;
+        }
+
+        // Trigger TTS
+        if (textToSpeak) {
+            narratorEl.innerText = textToSpeak;
+            speak(textToSpeak);
+        } else {
+            narratorEl.innerText = "...";
         }
 
         container.innerHTML = html;

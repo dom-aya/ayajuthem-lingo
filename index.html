@@ -38,27 +38,14 @@
         }
 
         .lesson-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            text-align: center;
-            border: 2px solid transparent;
-            position: relative;
+            background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; border: 2px solid transparent; position: relative;
         }
-
         .lesson-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--step-active); }
         .lesson-card h3 { margin: 0; font-size: 1.1rem; color: var(--primary); }
         .lesson-card .status { font-size: 0.8rem; color: #95a5a6; margin-top: 5px; }
-        
         .lesson-card.completed { border-color: var(--accent); background: #f0fdf4; }
-        .checkmark {
-            position: absolute; top: 10px; right: 10px;
-            color: var(--accent); font-weight: bold; font-size: 1.2rem;
-            display: none;
-        }
+        .checkmark { position: absolute; top: 10px; right: 10px; color: var(--accent); font-weight: bold; font-size: 1.2rem; display: none; }
         .lesson-card.completed .checkmark { display: block; }
 
         /* STEPPER */
@@ -70,8 +57,15 @@
         .step.completed { background: var(--primary); color: white; }
 
         /* NARRATOR */
-        #narrator-box { background: #34495e; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem; display: none; align-items: center; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: opacity 0.3s;}
+        #narrator-box { 
+            background: #34495e; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; 
+            font-size: 0.95rem; display: none; align-items: center; gap: 15px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: opacity 0.3s;
+            cursor: pointer; /* Indicates clickable to skip */
+        }
+        #narrator-box:active { background: #2c3e50; transform: translateY(1px); }
         .tts-label { font-weight: bold; text-transform: uppercase; font-size: 0.7rem; color: #bdc3c7; margin-right: 10px; letter-spacing: 1px;}
+        .skip-hint { font-size: 0.7rem; color: #7f8c8d; margin-left: auto; opacity: 0.6; }
 
         /* CONTENT CARD */
         #app-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-grow: 1; display: flex; flex-direction: column; }
@@ -81,52 +75,31 @@
         .chat-row { margin-bottom: 15px; padding: 15px 20px; border-radius: 8px; width: 90%; position: relative; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s; }
         .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-left: 4px solid #1abc9c; }
         .speaker-B { background-color: var(--speaker-b); margin-left: auto; border-right: 4px solid #f1c40f; }
-        
-        .chat-row.active-playing {
-            border: 2px solid var(--step-active);
-            box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
-            transform: scale(1.02);
-            z-index: 10;
-        }
+        .chat-row.active-playing { border: 2px solid var(--step-active); box-shadow: 0 0 15px rgba(52, 152, 219, 0.3); transform: scale(1.02); z-index: 10; }
         .speaker-label { font-size: 0.7em; font-weight: 700; color: #95a5a6; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 1px; }
 
         /* SEQUENCE STYLES */
         .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; flex-grow: 1; width: 100%; }
         
-        /* NOTE SLIDE */
-        .narrator-slide {
-            background: #fff; border-left: 6px solid var(--step-active);
-            padding: 30px; border-radius: 4px; font-size: 1.3rem; line-height: 1.6; color: var(--primary); max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
+        .narrator-slide { background: #fff; border-left: 6px solid var(--step-active); padding: 30px; border-radius: 4px; font-size: 1.3rem; line-height: 1.6; color: var(--primary); max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
         /* CONTENT BOX */
-        .hidden-content-box {
-            background: transparent; border-radius: 8px; padding: 20px; transition: all 0.3s ease; cursor: pointer; width: 100%;
-        }
+        .hidden-content-box { background: transparent; border-radius: 8px; padding: 20px; transition: all 0.3s ease; cursor: pointer; width: 100%; }
         .hidden-content-box.obscured { background: var(--blur-bg); user-select: none; }
-        
-        /* Specific hiding rules for different elements */
         .hidden-content-box.obscured .native-text,
         .hidden-content-box.obscured .translation,
-        .hidden-content-box.obscured .media-container { 
-            visibility: hidden; opacity: 0;
-        }
+        .hidden-content-box.obscured .media-container { visibility: hidden; opacity: 0; }
         
         .hidden-content-box.revealed { background: transparent; cursor: default; }
         .hidden-content-box.revealed .native-text,
         .hidden-content-box.revealed .translation,
-        .hidden-content-box.revealed .media-container { 
-            visibility: visible; opacity: 1;
-        }
+        .hidden-content-box.revealed .media-container { visibility: visible; opacity: 1; }
 
         .native-text { font-size: 2rem; color: var(--primary); margin: 10px 0; font-weight: 600; }
         .translation { font-size: 1.3rem; color: #7f8c8d; font-style: italic; }
         .prompt-text { font-size: 1.1rem; color: #333; margin-bottom: 20px; font-weight: bold; }
 
-        .reveal-hint {
-            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px;
-            color: #95a5a6; margin-bottom: 8px; opacity: 0; transition: opacity 0.3s;
-        }
+        .reveal-hint { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #95a5a6; margin-bottom: 8px; opacity: 0; transition: opacity 0.3s; }
         .reveal-hint.visible { opacity: 1; }
 
         /* MEDIA */
@@ -151,8 +124,7 @@
 <div class="container">
     
     <div id="menu-view">
-        <div id="menu-grid" class="menu-grid">
-            </div>
+        <div id="menu-grid" class="menu-grid"></div>
     </div>
 
     <div id="stepper" class="stepper">
@@ -161,13 +133,13 @@
         <div id="step-practice" class="step">3. Practice</div>
     </div>
 
-    <div id="narrator-box">
+    <div id="narrator-box" onclick="skipTTS()">
         <span class="tts-label">Instructor</span>
         <span id="narrator-text"></span>
+        <span class="skip-hint">(Tap to skip)</span>
     </div>
 
-    <div id="app-content" style="display:none;">
-        </div>
+    <div id="app-content" style="display:none;"></div>
 </div>
 
 <script>
@@ -190,11 +162,12 @@
 
     let autoPlayActive = false; 
     let completedLessons = JSON.parse(localStorage.getItem('ayajuthem_progress')) || [];
+    
+    // TTS State
+    let pendingAudioCallback = null; // What to do after TTS finishes
 
     // --- INIT ---
-    window.onload = () => {
-        renderMenu();
-    };
+    window.onload = () => { renderMenu(); };
 
     function renderMenu() {
         const grid = document.getElementById('menu-grid');
@@ -216,7 +189,6 @@
             grid.appendChild(card);
         });
 
-        // Show menu, hide app
         document.getElementById('menu-view').style.display = 'block';
         document.getElementById('stepper').style.display = 'none';
         document.getElementById('narrator-box').style.display = 'none';
@@ -229,21 +201,15 @@
 
         const txtFile = filename.replace('.csv', '.txt');
         fetch(txtFile)
-            .then(response => {
-                if (response.ok) return response.text();
-                return "Goals for this lesson are not currently available.";
-            })
+            .then(r => r.ok ? r.text() : "Goals not available.")
             .then(text => {
                 state.goalsText = text;
                 Papa.parse(filename, {
                     download: true, header: true, skipEmptyLines: true,
                     complete: (results) => {
                         const raw = results.data;
-                        state.conversationData = raw.filter(row => row.type && row.type.toLowerCase().trim() === 'c');
-                        state.sequenceData = raw.filter(row => {
-                            const t = row.type ? row.type.toLowerCase().trim() : '';
-                            return ['p', 'n', 'r', 't'].includes(t);
-                        });
+                        state.conversationData = raw.filter(r => r.type && r.type.toLowerCase().trim() === 'c');
+                        state.sequenceData = raw.filter(r => ['p', 'n', 'r', 't'].includes(r.type ? r.type.toLowerCase().trim() : ''));
 
                         document.getElementById('menu-view').style.display = 'none';
                         document.getElementById('app-content').style.display = 'block';
@@ -259,6 +225,7 @@
     // --- NAVIGATION ---
     function transitionToPhase(newPhase) {
         stopConversationPlayback();
+        cancelTTS(); // Stop any speaking when changing phases
         state.phase = newPhase;
         state.slideIndex = 0; 
         updateStepperUI();
@@ -284,6 +251,7 @@
 
     function handleNextAction() {
         stopConversationPlayback();
+        cancelTTS();
 
         if (state.phase === 'goals') {
             if(state.conversationData.length > 0) transitionToPhase('conversation');
@@ -311,63 +279,65 @@
 
     function handlePrevAction() {
         stopConversationPlayback();
+        cancelTTS();
         if (state.slideIndex > 0) {
             state.slideIndex--;
             render();
         }
     }
 
-    // --- AUDIO & MEDIA ---
+    // --- MEDIA UTILS ---
+    function getYoutubeId(url) {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    // Note: Autoplay removed here. We trigger play() via JS after TTS.
+    function renderMedia(url) {
+        if (!url) return '';
+        const ytId = getYoutubeId(url);
+        if (ytId) {
+            return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
+        } else {
+            return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
+        }
+    }
+
+    // Helper to play the specific audio element on the current slide
+    function playCurrentSlideAudio() {
+        const audio = document.querySelector('.card-view .slide-audio');
+        if (audio) {
+            audio.play().catch(e => console.log("Audio play blocked/failed", e));
+        }
+    }
+
+    // --- AUTO-SEQUENCE (CONVERSATION) ---
     function startConversationPlayback() {
         autoPlayActive = true;
-        // Small delay to ensure rendering is complete
         setTimeout(() => { playConversationIndex(0); }, 500);
     }
 
     function playConversationIndex(index) {
         if (!autoPlayActive) return;
         const rows = document.querySelectorAll('.chat-row');
-        
-        // End of sequence
-        if (index >= rows.length) {
-            autoPlayActive = false;
-            return;
-        }
+        if (index >= rows.length) { autoPlayActive = false; return; }
 
-        // Highlight
         rows.forEach(r => r.classList.remove('active-playing'));
         const currentRow = rows[index];
         currentRow.classList.add('active-playing');
         currentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
         const audio = currentRow.querySelector('audio');
-        
         if (audio) {
-            // Attempt play
-            const playPromise = audio.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    // Playback started successfully
-                    // Set up next track trigger
-                    audio.onended = function() { 
-                        if(autoPlayActive) playConversationIndex(index + 1); 
-                    };
-                })
-                .catch(error => {
-                    // Auto-play was prevented or audio failed
-                    console.warn("Autoplay failed or prevented:", error);
-                    // Instead of stopping, we wait 2 seconds and skip to next to keep flow alive
-                    setTimeout(() => {
-                        if(autoPlayActive) playConversationIndex(index + 1);
-                    }, 2000);
-                });
-            }
+            audio.play().then(() => {
+                audio.onended = function() { if(autoPlayActive) playConversationIndex(index + 1); };
+            }).catch(e => {
+                setTimeout(() => { if(autoPlayActive) playConversationIndex(index + 1); }, 2000);
+            });
         } else {
-            // No audio in this row (e.g. just text or video), skip after delay
-            setTimeout(() => {
-                if(autoPlayActive) playConversationIndex(index + 1);
-            }, 3000);
+            setTimeout(() => { if(autoPlayActive) playConversationIndex(index + 1); }, 3000);
         }
     }
 
@@ -377,27 +347,62 @@
         document.querySelectorAll('.chat-row').forEach(r => r.classList.remove('active-playing'));
     }
 
-    function getYoutubeId(url) {
-        if (!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+    // --- SPEECH SYNTHESIS & CALLBACKS ---
+    
+    function speak(text, callback) {
+        cancelTTS(); // Stop previous
+        if (!window.speechSynthesis) return;
+
+        // Store callback globally so we can trigger it if skipped
+        pendingAudioCallback = callback;
+
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 0.95;
+        const voices = window.speechSynthesis.getVoices();
+        const fVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English'));
+        if (fVoice) u.voice = fVoice;
+
+        u.onend = () => {
+            // TTS finished naturally
+            if (pendingAudioCallback) {
+                pendingAudioCallback();
+                pendingAudioCallback = null; // Clear it
+            }
+        };
+
+        window.speechSynthesis.speak(u);
     }
 
-    function renderMedia(url, autoPlay = false) {
-        if (!url) return '';
-        const ytId = getYoutubeId(url);
-        if (ytId) {
-            const params = autoPlay ? "?autoplay=1&rel=0" : "?rel=0";
-            return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}${params}" frameborder="0" allowfullscreen></iframe></div>`;
-        } else {
-            const autoAttr = (autoPlay) ? "autoplay" : "";
-            // Removed inline onplay handler to prevent logic loops
-            return `<div class="media-container"><audio controls ${autoAttr} src="${url}" style="width:100%;"></audio></div>`;
+    function cancelTTS() {
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        pendingAudioCallback = null; // Clear pending actions
+    }
+
+    function skipTTS() {
+        if (window.speechSynthesis && window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            // If there was a pending action (like play audio), do it immediately
+            if (pendingAudioCallback) {
+                pendingAudioCallback();
+                pendingAudioCallback = null;
+            }
         }
     }
 
-    // --- RENDERING ---
+    // --- REVEAL LOGIC for Test Slides ---
+    function revealAndPlay(element) {
+        element.classList.remove('obscured');
+        element.classList.add('revealed');
+        
+        // Find audio inside and play it
+        const audio = element.querySelector('audio');
+        if(audio) {
+            audio.currentTime = 0;
+            audio.play().catch(e => console.log("Reveal play error", e));
+        }
+    }
+
+    // --- MAIN RENDER ---
     function render() {
         const container = document.getElementById('app-content');
         const narratorBox = document.getElementById('narrator-box');
@@ -405,15 +410,14 @@
         
         let textToSpeak = "";
         let html = "";
-        
-        // Ensure narrator box is visible by default
+        let audioCallback = null; // What happens after TTS?
+
         narratorBox.style.display = 'flex';
 
-        // --- 1. GOALS ---
+        // 1. GOALS
         if (state.phase === 'goals') {
             textToSpeak = `Welcome to the lesson on ${state.title}.`;
             const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
-            
             html = `
                 <h2>Topic: ${state.title}</h2>
                 <div style="font-size:1.1rem; line-height:1.6; margin-bottom:40px; text-align:left;">
@@ -421,25 +425,24 @@
                 </div>
                 <div class="main-action-container">
                     <button class="big-btn" onclick="handleNextAction()">Start Lesson</button>
-                </div>
-            `;
+                </div>`;
         } 
-        
-        // --- 2. CONVERSATION ---
+        // 2. CONVERSATION
         else if (state.phase === 'conversation') {
             textToSpeak = "Listen to the conversation.";
+            // No Audio callback here because conversation has its own auto-sequencer
+            
             html = `<div class="chat-container">`;
             state.conversationData.forEach((row, i) => {
                 const spClass = row.speaker.includes('A') ? 'speaker-A' : 'speaker-B';
-                const mediaHtml = renderMedia(row.audio_url, false);
+                const mediaHtml = renderMedia(row.audio_url);
                 html += `
                     <div class="chat-row ${spClass}" id="row-${i}">
                         <span class="speaker-label">${row.speaker}</span>
                         <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
                         <div style="font-size:0.9rem; color:#666; margin-bottom: 10px;">${row.english}</div>
                         ${mediaHtml}
-                    </div>
-                `;
+                    </div>`;
             });
             html += `</div>
                 <div class="main-action-container" style="display:flex; flex-direction:column; gap:10px;">
@@ -448,99 +451,80 @@
                 </div>`;
             setTimeout(() => { startConversationPlayback(); }, 100);
         }
-
-        // --- 3. PRACTICE (p, n, r, t) ---
+        // 3. PRACTICE
         else if (state.phase === 'practice') {
-            
-            if(state.sequenceData.length === 0) {
-                 container.innerHTML = `<div style="text-align:center;">No items.<br><button class="big-btn" onclick="handleNextAction()">Skip</button></div>`;
-                 return;
-            }
+            if(state.sequenceData.length === 0) { container.innerHTML = "No items."; return; }
 
             const row = state.sequenceData[state.slideIndex];
             const type = row.type.toLowerCase().trim();
 
-            if (row.narrator_text && row.narrator_text.trim().length > 0) {
-                textToSpeak = row.narrator_text;
-            } else {
+            // Set TTS Text
+            if (row.narrator_text && row.narrator_text.trim().length > 0) textToSpeak = row.narrator_text;
+            else {
                 if(type === 'n') textToSpeak = "Note.";
                 else if(type === 'r') textToSpeak = "Recall.";
                 else if(type === 't') textToSpeak = "How would you say this?";
                 else if(type === 'p') textToSpeak = "Repeat.";
             }
 
-            // TYPE 'n' (Note)
+            // --- Slide Type Logic ---
+            
+            // NOTE ('n')
             if (type === 'n') {
-                narratorBox.style.display = 'none'; // Hide narrator
-                html = `
-                    <div class="card-view">
-                        <div class="narrator-slide">
-                            ${row.narrator_text}
-                        </div>
-                        <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">Note</div>
-                    </div>
-                `;
+                narratorBox.style.display = 'none';
+                html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div>`;
             }
-            // TYPES 'p', 'r', 't'
-            else {
-                let contentBoxClass = "hidden-content-box";
-                let hintClass = "reveal-hint";
-                let onClickAttr = "";
-                let topContent = "";
-                let hiddenContent = "";
+            // PRACTICE ('p') & RECALL ('r') -> Play Audio AFTER TTS
+            else if (type === 'p' || type === 'r') {
+                // Set Callback to play audio
+                audioCallback = () => { playCurrentSlideAudio(); };
 
-                // TEST ('t') - Top: Prompt | Hidden: Audio + Text
-                if (type === 't') {
-                    contentBoxClass += " obscured";
+                const isRecall = (type === 'r');
+                let contentClass = "hidden-content-box";
+                let hintClass = "reveal-hint";
+                let topContent = renderMedia(row.audio_url); // Audio visible at top
+                let onClickAttr = "";
+
+                if (isRecall) {
+                    contentClass += " obscured";
                     hintClass += " visible";
                     onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
-                    
-                    topContent = `<div class="prompt-text">How would you say: <br><span style="font-size:1.5rem; color:var(--primary)">"${row.english}"</span>?</div>`;
-                    
-                    // Note: Autoplay is FALSE for test cards because audio is hidden
-                    const mediaHtml = renderMedia(row.audio_url, false);
-                    hiddenContent = `
-                        ${mediaHtml}
-                        <div class="native-text">${row.ayajuthem}</div>
-                    `;
-                }
-                // RECALL ('r') - Top: Audio | Hidden: Text
-                else if (type === 'r') {
-                    contentBoxClass += " obscured";
-                    hintClass += " visible";
-                    onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
-                    topContent = renderMedia(row.audio_url, true);
-                    hiddenContent = `
-                        <div class="native-text">${row.ayajuthem}</div>
-                        <div class="translation">${row.english}</div>
-                    `;
-                }
-                // PRACTICE ('p') - All Visible
-                else {
-                    topContent = renderMedia(row.audio_url, true);
-                    hiddenContent = `
-                        <div class="native-text">${row.ayajuthem}</div>
-                        <div class="translation">${row.english}</div>
-                    `;
                 }
 
                 html = `
                     <div class="card-view">
-                        <div class="speaker-label" style="font-size:1rem; margin-bottom:15px;">${row.speaker}</div>
-                        
-                        ${topContent}
-                        
+                        <div class="speaker-label">${row.speaker}</div>
+                        ${topContent} 
                         <div class="${hintClass}">Tap to reveal</div>
+                        <div class="${contentClass}" ${onClickAttr}>
+                            <div class="native-text">${row.ayajuthem}</div>
+                            <div class="translation">${row.english}</div>
+                        </div>
+                        <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">Step ${state.slideIndex + 1} of ${state.sequenceData.length}</div>
+                    </div>`;
+            }
+            // TEST ('t') -> Audio Hidden, No Autoplay initially. Autoplay on Reveal.
+            else if (type === 't') {
+                // Audio callback is null because audio is hidden. 
+                
+                let contentClass = "hidden-content-box obscured";
+                let hintClass = "reveal-hint visible";
+                // On Click: Call special function to reveal AND play
+                let onClickAttr = `onclick="revealAndPlay(this)"`;
 
-                        <div class="${contentBoxClass}" ${onClickAttr}>
-                            ${hiddenContent}
-                        </div>
+                html = `
+                    <div class="card-view">
+                        <div class="speaker-label">${row.speaker}</div>
+                        <div class="prompt-text">How would you say: <br><span style="font-size:1.5rem; color:var(--primary)">"${row.english}"</span>?</div>
                         
-                        <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">
-                            Step ${state.slideIndex + 1} of ${state.sequenceData.length}
+                        <div class="${hintClass}">Tap to reveal & play</div>
+                        
+                        <div class="${contentClass}" ${onClickAttr}>
+                            ${renderMedia(row.audio_url)}
+                            <div class="native-text">${row.ayajuthem}</div>
                         </div>
-                    </div>
-                `;
+                        <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">Step ${state.slideIndex + 1} of ${state.sequenceData.length}</div>
+                    </div>`;
             }
 
             html += `
@@ -549,49 +533,28 @@
                     <button class="big-btn" onclick="handleNextAction()">
                         ${(state.slideIndex === state.sequenceData.length - 1) ? "Finish" : "Next"}
                     </button>
-                </div>
-            `;
+                </div>`;
         }
-
-        // --- 4. FINISH ---
+        // 4. FINISH
         else if (state.phase === 'finish') {
             textToSpeak = "Lesson complete.";
-            html = `
-                <div style="text-align:center; margin-top:50px;">
-                    <h1 style="font-size:3rem; margin-bottom: 20px; color: var(--accent);">✓</h1>
-                    <h2>Lesson Complete</h2>
-                    <p>You have finished <strong>${state.title}</strong>.</p>
-                    <div class="main-action-container">
-                        <button class="big-btn" onclick="handleNextAction()">Return to Menu</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        if (textToSpeak && narratorBox.style.display !== 'none') {
-            narratorEl.innerText = textToSpeak;
-            speak(textToSpeak);
-        } else {
-            narratorEl.innerText = "...";
+            html = `<div style="text-align:center; margin-top:50px;"><h1 style="font-size:3rem; margin-bottom: 20px; color: var(--accent);">✓</h1><h2>Lesson Complete</h2><div class="main-action-container"><button class="big-btn" onclick="handleNextAction()">Return to Menu</button></div></div>`;
         }
 
         container.innerHTML = html;
+
+        // Trigger TTS with Callback logic
+        if (textToSpeak && narratorBox.style.display !== 'none') {
+            narratorEl.innerText = textToSpeak;
+            speak(textToSpeak, audioCallback);
+        } else {
+            narratorEl.innerText = "...";
+        }
     }
 
-    // --- TTS ---
-    function speak(text) {
-        if (!window.speechSynthesis) return;
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.rate = 0.95;
-        const voices = window.speechSynthesis.getVoices();
-        const fVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English'));
-        if (fVoice) u.voice = fVoice;
-        window.speechSynthesis.speak(u);
-    }
+    // Initialize voices
     window.speechSynthesis.onvoiceschanged = () => {};
 </script>
 
 </body>
 </html>
-

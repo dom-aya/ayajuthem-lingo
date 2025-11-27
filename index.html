@@ -8,14 +8,14 @@
     <style>
         /* GLOBAL FONTS & COLORS */
         :root {
-            --primary: #58cc02; /* Duolingo Green */
-            --primary-dark: #46a302;
-            --secondary: #2c3e50;
+            --primary: #2c3e50; /* Dark Slate */
+            --accent: #27ae60;  /* Green */
             --light: #ecf0f1;
             --speaker-a: #e8f6f3;
             --speaker-b: #fef9e7;
-            --step-active: #1cb0f6; /* Duo Blue */
+            --step-active: #3498db; /* Blue */
             --blur-bg: #dfe6e9;
+            --highlight: #f1c40f; 
         }
 
         /* Enforce Segoe UI Everywhere */
@@ -26,8 +26,8 @@
         body { margin: 0; padding: 0; background: #f4f7f6; color: #333; }
         
         .container { max-width: 800px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background: white; color: var(--primary); padding: 1rem; text-align: center; border-bottom: 2px solid #e5e5e5; margin-bottom: 20px; box-shadow: 0 2px 0 #e5e5e5; }
-        header h2 { margin: 0; font-weight: 800; letter-spacing: -1px; font-size: 1.8rem; }
+        header { background: var(--primary); color: white; padding: 1rem; text-align: center; border-radius: 0 0 8px 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        header h2 { margin: 0; font-weight: 600; letter-spacing: 0.5px; }
 
         /* MENU GRID */
         .menu-grid {
@@ -39,56 +39,53 @@
         }
 
         .lesson-card {
-            background: white; padding: 20px; border-radius: 16px; 
-            box-shadow: 0 4px 0 #e5e5e5; border: 2px solid #e5e5e5;
-            cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; 
-            text-align: center; position: relative;
+            background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; border: 2px solid transparent; position: relative;
         }
-        .lesson-card:active { transform: translateY(4px); box-shadow: 0 0 0 #e5e5e5; }
-        .lesson-card h3 { margin: 0; font-size: 1.1rem; color: #4b4b4b; }
-        .lesson-card .status { font-size: 0.8rem; color: #afafaf; margin-top: 5px; text-transform: uppercase; font-weight: bold; }
-        
-        .lesson-card.completed { background: #fffee0; border-color: #f1c40f; box-shadow: 0 4px 0 #e6bb0e; }
-        .checkmark { position: absolute; top: 10px; right: 10px; color: #f1c40f; font-weight: bold; font-size: 1.2rem; display: none; }
+        .lesson-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--step-active); }
+        .lesson-card h3 { margin: 0; font-size: 1.1rem; color: var(--primary); }
+        .lesson-card .status { font-size: 0.8rem; color: #95a5a6; margin-top: 5px; }
+        .lesson-card.completed { border-color: var(--accent); background: #f0fdf4; }
+        .checkmark { position: absolute; top: 10px; right: 10px; color: var(--accent); font-weight: bold; font-size: 1.2rem; display: none; }
         .lesson-card.completed .checkmark { display: block; }
 
         /* STEPPER */
         .stepper { display: flex; justify-content: space-between; margin-bottom: 20px; display: none; }
-        .step { flex: 1; text-align: center; font-size: 0.85rem; padding: 10px; background: #e5e5e5; color: #afafaf; font-weight: bold; }
-        .step:first-child { border-radius: 12px 0 0 12px; }
-        .step:last-child { border-radius: 0 12px 12px 0; }
-        .step.active { background: var(--step-active); color: white; }
+        .step { flex: 1; text-align: center; font-size: 0.85rem; padding: 10px; background: #ddd; color: #7f8c8d; }
+        .step:first-child { border-radius: 6px 0 0 6px; }
+        .step:last-child { border-radius: 0 6px 6px 0; }
+        .step.active { background: var(--step-active); color: white; font-weight: 600; }
         .step.completed { background: var(--primary); color: white; }
 
         /* NARRATOR */
         #narrator-box { 
-            background: #2c3e50; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; 
+            background: #34495e; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; 
             font-size: 0.95rem; display: none; align-items: center; gap: 15px; 
-            box-shadow: 0 4px 0 #1a252f; transition: opacity 0.3s;
-            cursor: pointer; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: opacity 0.3s;
+            cursor: pointer; /* Indicates clickable to skip */
         }
-        #narrator-box:active { transform: translateY(2px); box-shadow: 0 0 0 #1a252f; }
-        .tts-label { font-weight: bold; text-transform: uppercase; font-size: 0.7rem; color: #95a5a6; margin-right: 10px; letter-spacing: 1px;}
+        #narrator-box:active { background: #2c3e50; transform: translateY(1px); }
+        .tts-label { font-weight: bold; text-transform: uppercase; font-size: 0.7rem; color: #bdc3c7; margin-right: 10px; letter-spacing: 1px;}
         .skip-hint { font-size: 0.7rem; color: #7f8c8d; margin-left: auto; opacity: 0.6; }
 
         /* CONTENT CARD */
-        #app-content { background: white; padding: 30px; border-radius: 16px; border: 2px solid #e5e5e5; box-shadow: 0 4px 0 #e5e5e5; flex-grow: 1; display: flex; flex-direction: column; }
+        #app-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-grow: 1; display: flex; flex-direction: column; }
 
         /* LISTEN MODE STYLES */
         .chat-container { flex-grow: 1; margin-bottom: 20px; }
-        .chat-row { margin-bottom: 15px; padding: 15px 20px; border-radius: 12px; width: 90%; position: relative; border: 2px solid #e5e5e5; transition: all 0.3s; }
-        .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-left: 6px solid #1abc9c; }
-        .speaker-B { background-color: var(--speaker-b); margin-left: auto; border-right: 6px solid #f1c40f; }
-        .chat-row.active-playing { border-color: var(--step-active); box-shadow: 0 0 15px rgba(28, 176, 246, 0.3); transform: scale(1.02); z-index: 10; }
-        .speaker-label { font-size: 0.7em; font-weight: 700; color: #afafaf; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+        .chat-row { margin-bottom: 15px; padding: 15px 20px; border-radius: 8px; width: 90%; position: relative; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s; }
+        .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-left: 4px solid #1abc9c; }
+        .speaker-B { background-color: var(--speaker-b); margin-left: auto; border-right: 4px solid #f1c40f; }
+        .chat-row.active-playing { border: 2px solid var(--step-active); box-shadow: 0 0 15px rgba(52, 152, 219, 0.3); transform: scale(1.02); z-index: 10; }
+        .speaker-label { font-size: 0.7em; font-weight: 700; color: #95a5a6; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 1px; }
 
         /* SEQUENCE STYLES */
         .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; flex-grow: 1; width: 100%; }
         
-        .narrator-slide { background: #fff; border-left: 6px solid var(--step-active); padding: 30px; border-radius: 12px; font-size: 1.4rem; line-height: 1.6; color: #4b4b4b; max-width: 600px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .narrator-slide { background: #fff; border-left: 6px solid var(--step-active); padding: 30px; border-radius: 4px; font-size: 1.3rem; line-height: 1.6; color: var(--primary); max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
         /* CONTENT BOX */
-        .hidden-content-box { background: transparent; border-radius: 12px; padding: 20px; transition: all 0.3s ease; cursor: pointer; width: 100%; }
+        .hidden-content-box { background: transparent; border-radius: 8px; padding: 20px; transition: all 0.3s ease; cursor: pointer; width: 100%; }
         .hidden-content-box.obscured { background: var(--blur-bg); user-select: none; }
         .hidden-content-box.obscured .native-text,
         .hidden-content-box.obscured .translation,
@@ -99,37 +96,28 @@
         .hidden-content-box.revealed .translation,
         .hidden-content-box.revealed .media-container { visibility: visible; opacity: 1; }
 
-        .native-text { font-size: 2rem; color: #4b4b4b; margin: 10px 0; font-weight: 700; }
-        .translation { font-size: 1.3rem; color: #afafaf; font-style: italic; }
-        .prompt-text { font-size: 1.1rem; color: #4b4b4b; margin-bottom: 20px; font-weight: bold; }
+        .native-text { font-size: 2rem; color: var(--primary); margin: 10px 0; font-weight: 600; }
+        .translation { font-size: 1.3rem; color: #7f8c8d; font-style: italic; }
+        .prompt-text { font-size: 1.1rem; color: #333; margin-bottom: 20px; font-weight: bold; }
 
-        .reveal-hint { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #afafaf; margin-bottom: 8px; opacity: 0; transition: opacity 0.3s; }
+        .reveal-hint { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #95a5a6; margin-bottom: 8px; opacity: 0; transition: opacity 0.3s; }
         .reveal-hint.visible { opacity: 1; }
 
         /* MEDIA */
         .media-container { width: 100%; margin-bottom: 20px; max-width: 500px; }
-        iframe { border-radius: 12px; }
+        iframe { border-radius: 8px; }
 
         /* BUTTONS */
-        .main-action-container { margin-top: auto; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; }
-        .big-btn { 
-            background: var(--primary); color: white; border: none; padding: 15px 40px; border-radius: 12px; cursor: pointer; 
-            font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-            box-shadow: 0 4px 0 var(--primary-dark); transition: transform 0.1s; 
-        }
-        .big-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--primary-dark); }
-        .big-btn:hover { filter: brightness(1.1); }
+        .main-action-container { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; text-align: center; }
+        .big-btn { background: var(--accent); color: white; border: none; padding: 15px 40px; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: background 0.2s; }
+        .big-btn:hover { background: #2ecc71; }
+        .big-btn.secondary { background: #95a5a6; margin-right: 10px; }
+        .stop-btn { background: #e74c3c; font-size: 0.9rem; padding: 10px 20px; margin-top: 10px; }
         
-        .big-btn.secondary { background: white; color: #afafaf; border: 2px solid #e5e5e5; box-shadow: 0 4px 0 #e5e5e5; margin-right: 10px; }
-        .big-btn.secondary:active { box-shadow: 0 0 0 #e5e5e5; color: #4b4b4b; }
-        
-        .stop-btn { background: #ff4b4b; box-shadow: 0 4px 0 #ea2b2b; }
-        .stop-btn:active { box-shadow: 0 0 0 #ea2b2b; }
-
-        /* RESET LINK */
         .reset-link {
-            text-align: center; margin-top: 30px; font-size: 0.8rem; color: #afafaf; text-decoration: underline; cursor: pointer;
+            text-align: center; margin-top: 30px; font-size: 0.8rem; color: #95a5a6; text-decoration: underline; cursor: pointer;
         }
+        .reset-link:hover { color: #333; }
 
     </style>
 </head>
@@ -191,7 +179,6 @@
         grid.innerHTML = "";
         
         lessonManifest.forEach(filename => {
-            // Remove number and .csv, keep name
             const cleanName = filename.replace('.csv', '').replace(/^\d+_/, '').replace(/_/g, ' ');
             const isDone = completedLessons.includes(filename);
             
@@ -202,7 +189,7 @@
             card.innerHTML = `
                 <div class="checkmark">✓</div>
                 <h3>${cleanName}</h3>
-                <div class="status">${isDone ? 'COMPLETED' : 'START'}</div>
+                <div class="status">${isDone ? 'Completed' : 'Start Lesson'}</div>
             `;
             grid.appendChild(card);
         });
@@ -546,7 +533,7 @@
         // 4. FINISH
         else if (state.phase === 'finish') {
             textToSpeak = "Lesson complete.";
-            html = `<div style="text-align:center; margin-top:50px;"><h1 style="font-size:3rem; margin-bottom: 20px; color: var(--primary);">✓</h1><h2>Lesson Complete</h2><div class="main-action-container"><button class="big-btn" onclick="handleNextAction()">Return to Menu</button></div></div>`;
+            html = `<div style="text-align:center; margin-top:50px;"><h1 style="font-size:3rem; margin-bottom: 20px; color: var(--accent);">✓</h1><h2>Lesson Complete</h2><div class="main-action-container"><button class="big-btn" onclick="handleNextAction()">Return to Menu</button></div></div>`;
         }
 
         container.innerHTML = html;

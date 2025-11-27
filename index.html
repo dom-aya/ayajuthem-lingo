@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ayalingo</title>
+    <title>Ayajuthem Conversation Learner</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
         /* GLOBAL FONTS & COLORS */
@@ -28,7 +28,7 @@
         .container { max-width: 800px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; }
         header { background: var(--primary); color: white; padding: 1rem; text-align: center; border-radius: 0 0 8px 8px; margin-bottom: 20px; }
         
-        /* MENU GRID (Touch Friendly) */
+        /* MENU GRID */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -61,7 +61,6 @@
         }
         .lesson-card.completed .checkmark { display: block; }
 
-
         /* STEPPER */
         .stepper { display: flex; justify-content: space-between; margin-bottom: 20px; display: none; }
         .step { flex: 1; text-align: center; font-size: 0.85rem; padding: 10px; background: #ddd; color: #7f8c8d; }
@@ -74,10 +73,10 @@
         #narrator-box { background: #34495e; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.95rem; display: none; align-items: center; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: opacity 0.3s;}
         .tts-label { font-weight: bold; text-transform: uppercase; font-size: 0.7rem; color: #bdc3c7; margin-right: 10px; letter-spacing: 1px;}
 
-        /* MAIN CONTENT CARD */
+        /* CONTENT CARD */
         #app-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-grow: 1; display: flex; flex-direction: column; }
 
-        /* LISTEN MODE (Type 'c') STYLES */
+        /* LISTEN MODE STYLES */
         .chat-container { flex-grow: 1; margin-bottom: 20px; }
         .chat-row { margin-bottom: 15px; padding: 15px 20px; border-radius: 8px; width: 90%; position: relative; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s; }
         .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-left: 4px solid #1abc9c; }
@@ -89,47 +88,35 @@
             transform: scale(1.02);
             z-index: 10;
         }
-
         .speaker-label { font-size: 0.7em; font-weight: 700; color: #95a5a6; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 1px; }
 
         /* SEQUENCE STYLES */
         .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; flex-grow: 1; width: 100%; }
         
-        /* NOTE SLIDE (Type 'n') */
+        /* NOTE SLIDE */
         .narrator-slide {
-            background: #fff;
-            border-left: 6px solid var(--step-active);
-            padding: 30px;
-            border-radius: 4px;
-            font-size: 1.3rem;
-            line-height: 1.6;
-            color: var(--primary);
-            max-width: 600px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: #fff; border-left: 6px solid var(--step-active);
+            padding: 30px; border-radius: 4px; font-size: 1.3rem; line-height: 1.6; color: var(--primary); max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         /* CONTENT BOX */
         .hidden-content-box {
-            background: transparent;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            width: 100%;
+            background: transparent; border-radius: 8px; padding: 20px; transition: all 0.3s ease; cursor: pointer; width: 100%;
         }
         .hidden-content-box.obscured { background: var(--blur-bg); user-select: none; }
+        
+        /* Specific hiding rules for different elements */
         .hidden-content-box.obscured .native-text,
         .hidden-content-box.obscured .translation,
         .hidden-content-box.obscured .media-container { 
-            visibility: hidden; /* Actually hide elements so they don't take space/play */
-            opacity: 0;
+            visibility: hidden; opacity: 0;
         }
+        
         .hidden-content-box.revealed { background: transparent; cursor: default; }
         .hidden-content-box.revealed .native-text,
         .hidden-content-box.revealed .translation,
         .hidden-content-box.revealed .media-container { 
-            visibility: visible; 
-            opacity: 1;
+            visibility: visible; opacity: 1;
         }
 
         .native-text { font-size: 2rem; color: var(--primary); margin: 10px 0; font-weight: 600; }
@@ -158,7 +145,7 @@
 <body>
 
 <header>
-    <h2>Ayalingo</h2>
+    <h2>Ayajuthem Conversation Lab</h2>
 </header>
 
 <div class="container">
@@ -197,7 +184,7 @@
         sequenceData: [],     
         title: "",
         filename: "",
-        goalsText: "", // Content from .txt file
+        goalsText: "", 
         phase: null,
         slideIndex: 0
     };
@@ -241,7 +228,6 @@
         state.filename = filename;
         state.title = filename.replace('.csv', '').replace(/_/g, ' ').substring(3);
 
-        // 1. Fetch the TXT file for goals
         const txtFile = filename.replace('.csv', '.txt');
         fetch(txtFile)
             .then(response => {
@@ -249,8 +235,7 @@
                 return "Goals for this lesson are not currently available.";
             })
             .then(text => {
-                state.goalsText = text; // Store goals
-                // 2. Parse CSV
+                state.goalsText = text;
                 Papa.parse(filename, {
                     download: true, header: true, skipEmptyLines: true,
                     complete: (results) => {
@@ -261,7 +246,6 @@
                             return ['p', 'n', 'r', 't'].includes(t);
                         });
 
-                        // UI Switch
                         document.getElementById('menu-view').style.display = 'none';
                         document.getElementById('app-content').style.display = 'block';
                         document.getElementById('stepper').style.display = 'flex';
@@ -318,12 +302,11 @@
             }
         }
         else if (state.phase === 'finish') {
-            // Save progress
             if (!completedLessons.includes(state.filename)) {
                 completedLessons.push(state.filename);
                 localStorage.setItem('ayajuthem_progress', JSON.stringify(completedLessons));
             }
-            renderMenu(); // Return to grid
+            renderMenu(); 
         }
     }
 
@@ -338,29 +321,54 @@
     // --- AUDIO & MEDIA ---
     function startConversationPlayback() {
         autoPlayActive = true;
-        setTimeout(() => { playConversationIndex(0); }, 800);
+        // Small delay to ensure rendering is complete
+        setTimeout(() => { playConversationIndex(0); }, 500);
     }
 
     function playConversationIndex(index) {
         if (!autoPlayActive) return;
         const rows = document.querySelectorAll('.chat-row');
+        
+        // End of sequence
         if (index >= rows.length) {
             autoPlayActive = false;
             return;
         }
 
+        // Highlight
         rows.forEach(r => r.classList.remove('active-playing'));
         const currentRow = rows[index];
         currentRow.classList.add('active-playing');
         currentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
         const audio = currentRow.querySelector('audio');
+        
         if (audio) {
-            audio.play().catch(e => { autoPlayActive = false; currentRow.classList.remove('active-playing'); });
-            audio.onended = function() { if(autoPlayActive) playConversationIndex(index + 1); };
+            // Attempt play
+            const playPromise = audio.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // Playback started successfully
+                    // Set up next track trigger
+                    audio.onended = function() { 
+                        if(autoPlayActive) playConversationIndex(index + 1); 
+                    };
+                })
+                .catch(error => {
+                    // Auto-play was prevented or audio failed
+                    console.warn("Autoplay failed or prevented:", error);
+                    // Instead of stopping, we wait 2 seconds and skip to next to keep flow alive
+                    setTimeout(() => {
+                        if(autoPlayActive) playConversationIndex(index + 1);
+                    }, 2000);
+                });
+            }
         } else {
-            autoPlayActive = false;
-            currentRow.classList.remove('active-playing');
+            // No audio in this row (e.g. just text or video), skip after delay
+            setTimeout(() => {
+                if(autoPlayActive) playConversationIndex(index + 1);
+            }, 3000);
         }
     }
 
@@ -384,8 +392,9 @@
             const params = autoPlay ? "?autoplay=1&rel=0" : "?rel=0";
             return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}${params}" frameborder="0" allowfullscreen></iframe></div>`;
         } else {
-            const autoAttr = (autoPlay && state.phase !== 'conversation') ? "autoplay" : "";
-            return `<div class="media-container"><audio controls ${autoAttr} src="${url}" style="width:100%;" onplay="if(event.isTrusted) { stopConversationPlayback(); }"></audio></div>`;
+            const autoAttr = (autoPlay) ? "autoplay" : "";
+            // Removed inline onplay handler to prevent logic loops
+            return `<div class="media-container"><audio controls ${autoAttr} src="${url}" style="width:100%;"></audio></div>`;
         }
     }
 
@@ -404,8 +413,6 @@
         // --- 1. GOALS ---
         if (state.phase === 'goals') {
             textToSpeak = `Welcome to the lesson on ${state.title}.`;
-            // Use the text loaded from the .txt file
-            // Convert newlines to breaks if it's plain text
             const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
             
             html = `
@@ -454,7 +461,6 @@
             const row = state.sequenceData[state.slideIndex];
             const type = row.type.toLowerCase().trim();
 
-            // Set TTS text
             if (row.narrator_text && row.narrator_text.trim().length > 0) {
                 textToSpeak = row.narrator_text;
             } else {
@@ -466,7 +472,7 @@
 
             // TYPE 'n' (Note)
             if (type === 'n') {
-                narratorBox.style.display = 'none'; // Hide narrator on note pages
+                narratorBox.style.display = 'none'; // Hide narrator
                 html = `
                     <div class="card-view">
                         <div class="narrator-slide">
@@ -476,7 +482,7 @@
                     </div>
                 `;
             }
-            // TYPES 'p' (Practice), 'r' (Recall), 't' (Test)
+            // TYPES 'p', 'r', 't'
             else {
                 let contentBoxClass = "hidden-content-box";
                 let hintClass = "reveal-hint";
@@ -484,38 +490,33 @@
                 let topContent = "";
                 let hiddenContent = "";
 
-                // Logic for TEST ('t') - Reverse Card
+                // TEST ('t') - Top: Prompt | Hidden: Audio + Text
                 if (type === 't') {
                     contentBoxClass += " obscured";
                     hintClass += " visible";
                     onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
                     
-                    // Top is the English Prompt
                     topContent = `<div class="prompt-text">How would you say: <br><span style="font-size:1.5rem; color:var(--primary)">"${row.english}"</span>?</div>`;
                     
-                    // Hidden is Audio + Native
-                    const mediaHtml = renderMedia(row.audio_url, true);
+                    // Note: Autoplay is FALSE for test cards because audio is hidden
+                    const mediaHtml = renderMedia(row.audio_url, false);
                     hiddenContent = `
                         ${mediaHtml}
                         <div class="native-text">${row.ayajuthem}</div>
                     `;
                 }
-                // Logic for RECALL ('r') - Standard Flashcard
+                // RECALL ('r') - Top: Audio | Hidden: Text
                 else if (type === 'r') {
                     contentBoxClass += " obscured";
                     hintClass += " visible";
                     onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
-
-                    // Top is Audio
                     topContent = renderMedia(row.audio_url, true);
-
-                    // Hidden is Text
                     hiddenContent = `
                         <div class="native-text">${row.ayajuthem}</div>
                         <div class="translation">${row.english}</div>
                     `;
                 }
-                // Logic for PRACTICE ('p') - Open Card
+                // PRACTICE ('p') - All Visible
                 else {
                     topContent = renderMedia(row.audio_url, true);
                     hiddenContent = `

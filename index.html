@@ -3,552 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ayalingo</title>
+    <title>CSV Data Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        /* GLOBAL FONTS & COLORS */
-        :root {
-            --primary: #2c3e50; /* Dark Slate */
-            --accent: #27ae60;  /* Green */
-            --light: #ecf0f1;
-            --speaker-a: #e8f6f3;
-            --speaker-b: #fef9e7;
-            --step-active: #3498db; /* Blue */
-            --blur-bg: #dfe6e9;
-            --highlight: #f1c40f; 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
         }
 
-        /* Enforce Segoe UI Everywhere */
-        body, button, select, input, h1, h2, h3, h4, div, span, p, li, a {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-        }
+        h1 { text-align: center; color: #2c3e50; }
 
-        body { margin: 0; padding: 0; background: #f4f7f6; color: #333; }
-        
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; }
-        header { background: var(--primary); color: white; padding: 1rem; text-align: center; border-radius: 0 0 8px 8px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        header h2 { margin: 0; font-weight: 600; letter-spacing: 0.5px; }
-
-        /* MENU GRID */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            width: 100%;
+        /* Controls */
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            text-align: center;
         }
 
-        .lesson-card {
-            background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; border: 2px solid transparent; position: relative;
+        select {
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            width: 50%;
         }
-        .lesson-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--step-active); }
-        .lesson-card h3 { margin: 0; font-size: 1.1rem; color: var(--primary); }
-        .lesson-card .status { font-size: 0.8rem; color: #95a5a6; margin-top: 5px; }
-        .lesson-card.completed { border-color: var(--accent); background: #f0fdf4; }
-        .checkmark { position: absolute; top: 10px; right: 10px; color: var(--accent); font-weight: bold; font-size: 1.2rem; display: none; }
-        .lesson-card.completed .checkmark { display: block; }
 
-        /* STEPPER */
-        .stepper { display: flex; justify-content: space-between; margin-bottom: 20px; display: none; }
-        .step { flex: 1; text-align: center; font-size: 0.85rem; padding: 10px; background: #ddd; color: #7f8c8d; }
-        .step:first-child { border-radius: 6px 0 0 6px; }
-        .step:last-child { border-radius: 0 6px 6px 0; }
-        .step.active { background: var(--step-active); color: white; font-weight: 600; }
-        .step.completed { background: var(--primary); color: white; }
-
-        /* NARRATOR */
-        #narrator-box { 
-            background: #34495e; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; 
-            font-size: 0.95rem; display: none; align-items: center; gap: 15px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: opacity 0.3s;
-            cursor: pointer; /* Indicates clickable to skip */
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto; /* Handles wide tables */
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        #narrator-box:active { background: #2c3e50; transform: translateY(1px); }
-        .tts-label { font-weight: bold; text-transform: uppercase; font-size: 0.7rem; color: #bdc3c7; margin-right: 10px; letter-spacing: 1px;}
-        .skip-hint { font-size: 0.7rem; color: #7f8c8d; margin-left: auto; opacity: 0.6; }
 
-        /* CONTENT CARD */
-        #app-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); flex-grow: 1; display: flex; flex-direction: column; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
 
-        /* LISTEN MODE STYLES */
-        .chat-container { flex-grow: 1; margin-bottom: 20px; }
-        .chat-row { margin-bottom: 15px; padding: 15px 20px; border-radius: 8px; width: 90%; position: relative; border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s; }
-        .speaker-A { background-color: var(--speaker-a); margin-right: auto; border-left: 4px solid #1abc9c; }
-        .speaker-B { background-color: var(--speaker-b); margin-left: auto; border-right: 4px solid #f1c40f; }
-        .chat-row.active-playing { border: 2px solid var(--step-active); box-shadow: 0 0 15px rgba(52, 152, 219, 0.3); transform: scale(1.02); z-index: 10; }
-        .speaker-label { font-size: 0.7em; font-weight: 700; color: #95a5a6; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+        thead {
+            background-color: #2c3e50;
+            color: white;
+        }
 
-        /* SEQUENCE STYLES */
-        .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; flex-grow: 1; width: 100%; }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover { background-color: #f1f1f1; }
         
-        .narrator-slide { background: #fff; border-left: 6px solid var(--step-active); padding: 30px; border-radius: 4px; font-size: 1.3rem; line-height: 1.6; color: var(--primary); max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-
-        /* CONTENT BOX */
-        .hidden-content-box { background: transparent; border-radius: 8px; padding: 20px; transition: all 0.3s ease; cursor: pointer; width: 100%; }
-        .hidden-content-box.obscured { background: var(--blur-bg); user-select: none; }
-        .hidden-content-box.obscured .native-text,
-        .hidden-content-box.obscured .translation,
-        .hidden-content-box.obscured .media-container { visibility: hidden; opacity: 0; }
-        
-        .hidden-content-box.revealed { background: transparent; cursor: default; }
-        .hidden-content-box.revealed .native-text,
-        .hidden-content-box.revealed .translation,
-        .hidden-content-box.revealed .media-container { visibility: visible; opacity: 1; }
-
-        .native-text { font-size: 2rem; color: var(--primary); margin: 10px 0; font-weight: 600; }
-        .translation { font-size: 1.3rem; color: #7f8c8d; font-style: italic; }
-        .prompt-text { font-size: 1.1rem; color: #333; margin-bottom: 20px; font-weight: bold; }
-
-        .reveal-hint { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #95a5a6; margin-bottom: 8px; opacity: 0; transition: opacity 0.3s; }
-        .reveal-hint.visible { opacity: 1; }
-
-        /* MEDIA */
-        .media-container { width: 100%; margin-bottom: 20px; max-width: 500px; }
-        iframe { border-radius: 8px; }
-
-        /* BUTTONS */
-        .main-action-container { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; text-align: center; }
-        .big-btn { background: var(--accent); color: white; border: none; padding: 15px 40px; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: background 0.2s; }
-        .big-btn:hover { background: #2ecc71; }
-        .big-btn.secondary { background: #95a5a6; margin-right: 10px; }
-        .stop-btn { background: #e74c3c; font-size: 0.9rem; padding: 10px 20px; margin-top: 10px; }
-        
-        .reset-link {
-            text-align: center; margin-top: 30px; font-size: 0.8rem; color: #95a5a6; text-decoration: underline; cursor: pointer;
+        /* Alternating row colors */
+        tbody tr:nth-of-type(even) {
+            background-color: #f9f9f9;
         }
-        .reset-link:hover { color: #333; }
 
+        /* Empty State */
+        #empty-msg {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <h2>Ayalingo</h2>
-</header>
+    <h1>CSV Data Viewer</h1>
 
-<div class="container">
-    
-    <div id="menu-view">
-        <div id="menu-grid" class="menu-grid"></div>
-        <div class="reset-link" onclick="resetProgress()">Reset Progress</div>
+    <div class="controls">
+        <label for="file-select"><strong>Select File:</strong></label><br><br>
+        <select id="file-select" onchange="loadTable(this.value)">
+            <option value="" disabled selected>Choose a CSV file...</option>
+            </select>
     </div>
 
-    <div id="stepper" class="stepper">
-        <div id="step-goals" class="step">1. Goals</div>
-        <div id="step-conversation" class="step">2. Conversation</div>
-        <div id="step-practice" class="step">3. Practice</div>
+    <div class="table-container">
+        <div id="empty-msg">Select a file above to view data.</div>
+        <table id="data-table" style="display:none;">
+            <thead>
+                <tr id="table-head-row"></tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
     </div>
-
-    <div id="narrator-box" onclick="skipTTS()">
-        <span class="tts-label">Instructor</span>
-        <span id="narrator-text"></span>
-        <span class="skip-hint">(Tap to skip)</span>
-    </div>
-
-    <div id="app-content" style="display:none;"></div>
-</div>
 
 <script>
-    // --- CONFIGURATION ---
-    const lessonManifest = [
+    // 1. CONFIGURATION: List your files here
+    const files = [
         "01_Greetings.csv",
         "02_Story.csv"
     ];
 
-    // --- STATE ---
-    let state = {
-        conversationData: [], 
-        sequenceData: [],     
-        title: "",
-        filename: "",
-        goalsText: "", 
-        phase: null,
-        slideIndex: 0
+    // 2. INITIALIZATION: Populate Dropdown
+    window.onload = () => {
+        const selector = document.getElementById('file-select');
+        files.forEach(filename => {
+            const opt = document.createElement('option');
+            opt.value = filename;
+            opt.innerText = filename;
+            selector.appendChild(opt);
+        });
     };
 
-    let autoPlayActive = false; 
-    let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
-    let pendingAudioCallback = null; 
-
-    // --- INIT ---
-    window.onload = () => { renderMenu(); };
-
-    function renderMenu() {
-        const grid = document.getElementById('menu-grid');
-        grid.innerHTML = "";
-        
-        lessonManifest.forEach(filename => {
-            const cleanName = filename.replace('.csv', '').replace(/^\d+_/, '').replace(/_/g, ' ');
-            const isDone = completedLessons.includes(filename);
-            
-            const card = document.createElement('div');
-            card.className = `lesson-card ${isDone ? 'completed' : ''}`;
-            card.onclick = () => loadLesson(filename);
-            
-            card.innerHTML = `
-                <div class="checkmark">✓</div>
-                <h3>${cleanName}</h3>
-                <div class="status">${isDone ? 'Completed' : 'Start Lesson'}</div>
-            `;
-            grid.appendChild(card);
-        });
-
-        document.getElementById('menu-view').style.display = 'block';
-        document.getElementById('stepper').style.display = 'none';
-        document.getElementById('narrator-box').style.display = 'none';
-        document.getElementById('app-content').style.display = 'none';
-    }
-
-    function resetProgress() {
-        if(confirm("Are you sure you want to reset all progress?")) {
-            localStorage.removeItem('ayalingo_progress');
-            completedLessons = [];
-            renderMenu();
-        }
-    }
-
-    function loadLesson(filename) {
-        state.filename = filename;
-        state.title = filename.replace('.csv', '').replace(/^\d+_/, '').replace(/_/g, ' ');
-
-        const txtFile = filename.replace('.csv', '.txt');
-        fetch(txtFile)
-            .then(r => r.ok ? r.text() : "Goals not available.")
-            .then(text => {
-                state.goalsText = text;
-                Papa.parse(filename, {
-                    download: true, header: true, skipEmptyLines: true,
-                    complete: (results) => {
-                        const raw = results.data;
-                        state.conversationData = raw.filter(r => r.type && r.type.toLowerCase().trim() === 'c');
-                        state.sequenceData = raw.filter(r => ['p', 'n', 'r', 't'].includes(r.type ? r.type.toLowerCase().trim() : ''));
-
-                        document.getElementById('menu-view').style.display = 'none';
-                        document.getElementById('app-content').style.display = 'block';
-                        document.getElementById('stepper').style.display = 'flex';
-                        // Note: Narrator box display is handled inside render() now
-                        
-                        transitionToPhase('goals');
-                    }
-                });
-            });
-    }
-
-    // --- NAVIGATION ---
-    function transitionToPhase(newPhase) {
-        stopConversationPlayback();
-        cancelTTS();
-        state.phase = newPhase;
-        state.slideIndex = 0; 
-        updateStepperUI();
-        render();
-    }
-
-    function updateStepperUI() {
-        const phases = ['goals', 'conversation', 'practice'];
-        let passedActive = false;
-        phases.forEach(p => {
-            const el = document.getElementById(`step-${p}`);
-            el.className = 'step'; 
-            if (state.phase === p) {
-                el.classList.add('active');
-                passedActive = true;
-            } else if (!passedActive && state.phase !== 'finish') {
-                el.classList.add('completed');
-            } else if (state.phase === 'finish') {
-                el.classList.add('completed');
+    // 3. LOAD & RENDER
+    function loadTable(filename) {
+        Papa.parse(filename, {
+            download: true,
+            header: true,       // Treats first row as headers
+            skipEmptyLines: true,
+            complete: function(results) {
+                render(results.data, results.meta.fields);
+            },
+            error: function(err) {
+                alert("Error loading file: " + err.message);
             }
         });
     }
 
-    function handleNextAction() {
-        stopConversationPlayback();
-        cancelTTS();
+    function render(data, headers) {
+        const table = document.getElementById('data-table');
+        const theadRow = document.getElementById('table-head-row');
+        const tbody = document.getElementById('table-body');
+        const msg = document.getElementById('empty-msg');
 
-        if (state.phase === 'goals') {
-            if(state.conversationData.length > 0) transitionToPhase('conversation');
-            else transitionToPhase('practice');
+        // Clear previous data
+        theadRow.innerHTML = '';
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            msg.innerText = "File is empty.";
+            msg.style.display = 'block';
+            table.style.display = 'none';
+            return;
         }
-        else if (state.phase === 'conversation') {
-            transitionToPhase('practice');
-        }
-        else if (state.phase === 'practice') {
-            if (state.slideIndex < state.sequenceData.length - 1) {
-                state.slideIndex++;
-                render();
-            } else {
-                transitionToPhase('finish');
-            }
-        }
-        else if (state.phase === 'finish') {
-            if (!completedLessons.includes(state.filename)) {
-                completedLessons.push(state.filename);
-                localStorage.setItem('ayalingo_progress', JSON.stringify(completedLessons));
-            }
-            renderMenu(); 
-        }
-    }
 
-    function handlePrevAction() {
-        stopConversationPlayback();
-        cancelTTS();
-        if (state.slideIndex > 0) {
-            state.slideIndex--;
-            render();
-        }
-    }
+        // Show Table, Hide Message
+        msg.style.display = 'none';
+        table.style.display = 'table';
 
-    // --- MEDIA UTILS ---
-    function getYoutubeId(url) {
-        if (!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
-    }
-
-    function renderMedia(url) {
-        if (!url) return '';
-        const ytId = getYoutubeId(url);
-        if (ytId) {
-            return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
-        } else {
-            return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
-        }
-    }
-
-    function playCurrentSlideAudio() {
-        const audio = document.querySelector('.card-view .slide-audio');
-        if (audio) {
-            audio.play().catch(e => console.log("Audio play blocked/failed", e));
-        }
-    }
-
-    // --- AUTO-SEQUENCE (CONVERSATION) ---
-    function startConversationPlayback() {
-        autoPlayActive = true;
-        setTimeout(() => { playConversationIndex(0); }, 500);
-    }
-
-    function playConversationIndex(index) {
-        if (!autoPlayActive) return;
-        const rows = document.querySelectorAll('.chat-row');
-        if (index >= rows.length) { autoPlayActive = false; return; }
-
-        rows.forEach(r => r.classList.remove('active-playing'));
-        const currentRow = rows[index];
-        currentRow.classList.add('active-playing');
-        currentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-        const audio = currentRow.querySelector('audio');
-        if (audio) {
-            audio.play().then(() => {
-                audio.onended = function() { if(autoPlayActive) playConversationIndex(index + 1); };
-            }).catch(e => {
-                setTimeout(() => { if(autoPlayActive) playConversationIndex(index + 1); }, 2000);
+        // 1. Generate Headers
+        if (headers) {
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.innerText = headerText;
+                theadRow.appendChild(th);
             });
-        } else {
-            setTimeout(() => { if(autoPlayActive) playConversationIndex(index + 1); }, 3000);
         }
-    }
 
-    function stopConversationPlayback() {
-        autoPlayActive = false;
-        document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; a.onended = null; });
-        document.querySelectorAll('.chat-row').forEach(r => r.classList.remove('active-playing'));
-    }
-
-    // --- TTS & CALLBACKS ---
-    function speak(text, callback) {
-        cancelTTS(); 
-        if (!window.speechSynthesis) return;
-
-        pendingAudioCallback = callback;
-
-        const u = new SpeechSynthesisUtterance(text);
-        u.rate = 0.95;
-        const voices = window.speechSynthesis.getVoices();
-        const fVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English'));
-        if (fVoice) u.voice = fVoice;
-
-        u.onend = () => {
-            if (pendingAudioCallback) {
-                pendingAudioCallback();
-                pendingAudioCallback = null; 
-            }
-        };
-        window.speechSynthesis.speak(u);
-    }
-
-    function cancelTTS() {
-        if (window.speechSynthesis) window.speechSynthesis.cancel();
-        pendingAudioCallback = null; 
-    }
-
-    function skipTTS() {
-        if (window.speechSynthesis && window.speechSynthesis.speaking) {
-            window.speechSynthesis.cancel();
-            if (pendingAudioCallback) {
-                pendingAudioCallback();
-                pendingAudioCallback = null;
-            }
-        }
-    }
-
-    // --- REVEAL LOGIC ---
-    function revealAndPlay(element) {
-        element.classList.remove('obscured');
-        element.classList.add('revealed');
-        const audio = element.querySelector('audio');
-        if(audio) {
-            audio.currentTime = 0;
-            audio.play().catch(e => console.log("Reveal play error", e));
-        }
-    }
-
-    // --- MAIN RENDER ---
-    function render() {
-        const container = document.getElementById('app-content');
-        const narratorBox = document.getElementById('narrator-box');
-        const narratorEl = document.getElementById('narrator-text');
-        
-        let textToSpeak = "";
-        let html = "";
-        let audioCallback = null; 
-
-        // Default narrator visibility is block, we might hide it later
-        narratorBox.style.display = 'flex';
-
-        // 1. GOALS
-        if (state.phase === 'goals') {
-            textToSpeak = `Welcome to the lesson on ${state.title}.`;
-            const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
-            html = `
-                <h2>Topic: ${state.title}</h2>
-                <div style="font-size:1.1rem; line-height:1.6; margin-bottom:40px; text-align:left;">
-                    ${formattedGoals}
-                </div>
-                <div class="main-action-container">
-                    <button class="big-btn" onclick="handleNextAction()">Start Lesson</button>
-                </div>`;
-        } 
-        // 2. CONVERSATION
-        else if (state.phase === 'conversation') {
-            textToSpeak = "Listen to the conversation.";
-            html = `<div class="chat-container">`;
-            state.conversationData.forEach((row, i) => {
-                const spClass = row.speaker.includes('A') ? 'speaker-A' : 'speaker-B';
-                const mediaHtml = renderMedia(row.audio_url);
-                html += `
-                    <div class="chat-row ${spClass}" id="row-${i}">
-                        <span class="speaker-label">${row.speaker}</span>
-                        <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
-                        <div style="font-size:0.9rem; color:#666; margin-bottom: 10px;">${row.english}</div>
-                        ${mediaHtml}
-                    </div>`;
+        // 2. Generate Rows
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            
+            // Loop through headers to ensure order matches columns
+            headers.forEach(headerKey => {
+                const td = document.createElement('td');
+                td.innerText = row[headerKey] || ""; // Handle empty cells
+                tr.appendChild(td);
             });
-            html += `</div>
-                <div class="main-action-container" style="display:flex; flex-direction:column; gap:10px;">
-                    <button class="big-btn" onclick="handleNextAction()">Continue to Practice</button>
-                    <button class="big-btn secondary stop-btn" onclick="stopConversationPlayback()">Stop Auto-Play</button>
-                </div>`;
-            setTimeout(() => { startConversationPlayback(); }, 100);
-        }
-        // 3. PRACTICE
-        else if (state.phase === 'practice') {
-            if(state.sequenceData.length === 0) { container.innerHTML = "No items."; return; }
-
-            const row = state.sequenceData[state.slideIndex];
-            const type = row.type.toLowerCase().trim();
-
-            // Set TTS Text
-            if (row.narrator_text && row.narrator_text.trim().length > 0) textToSpeak = row.narrator_text;
-            else {
-                if(type === 'n') textToSpeak = "Note.";
-                else if(type === 'r') textToSpeak = "Recall.";
-                else if(type === 't') textToSpeak = "How would you say this?";
-                else if(type === 'p') textToSpeak = "Repeat.";
-            }
-
-            // NOTE ('n')
-            if (type === 'n') {
-                narratorBox.style.display = 'none'; // HIDE BOX
-                // IMPORTANT: textToSpeak is still set, so TTS will read it!
-                html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div>`;
-            }
-            // PRACTICE ('p') & RECALL ('r')
-            else if (type === 'p' || type === 'r') {
-                audioCallback = () => { playCurrentSlideAudio(); };
-                const isRecall = (type === 'r');
-                let contentClass = "hidden-content-box";
-                let hintClass = "reveal-hint";
-                let topContent = renderMedia(row.audio_url); 
-                let onClickAttr = "";
-
-                if (isRecall) {
-                    contentClass += " obscured";
-                    hintClass += " visible";
-                    onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
-                }
-
-                html = `
-                    <div class="card-view">
-                        <div class="speaker-label">${row.speaker}</div>
-                        ${topContent} 
-                        <div class="${hintClass}">Tap to reveal</div>
-                        <div class="${contentClass}" ${onClickAttr}>
-                            <div class="native-text">${row.ayajuthem}</div>
-                            <div class="translation">${row.english}</div>
-                        </div>
-                        <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">Step ${state.slideIndex + 1} of ${state.sequenceData.length}</div>
-                    </div>`;
-            }
-            // TEST ('t')
-            else if (type === 't') {
-                let contentClass = "hidden-content-box obscured";
-                let hintClass = "reveal-hint visible";
-                let onClickAttr = `onclick="revealAndPlay(this)"`;
-
-                html = `
-                    <div class="card-view">
-                        <div class="speaker-label">${row.speaker}</div>
-                        <div class="prompt-text">How would you say: <br><span style="font-size:1.5rem; color:#4b4b4b">"${row.english}"</span>?</div>
-                        <div class="${hintClass}">Tap to reveal & play</div>
-                        <div class="${contentClass}" ${onClickAttr}>
-                            ${renderMedia(row.audio_url)}
-                            <div class="native-text">${row.ayajuthem}</div>
-                        </div>
-                        <div style="margin-top:20px; color:#ccc; font-size:0.8rem;">Step ${state.slideIndex + 1} of ${state.sequenceData.length}</div>
-                    </div>`;
-            }
-
-            html += `
-                <div class="main-action-container">
-                    ${state.slideIndex > 0 ? `<button class="big-btn secondary" onclick="handlePrevAction()">Back</button>` : ''}
-                    <button class="big-btn" onclick="handleNextAction()">
-                        ${(state.slideIndex === state.sequenceData.length - 1) ? "Finish" : "Next"}
-                    </button>
-                </div>`;
-        }
-        // 4. FINISH
-        else if (state.phase === 'finish') {
-            textToSpeak = "Lesson complete.";
-            html = `<div style="text-align:center; margin-top:50px;"><h1 style="font-size:3rem; margin-bottom: 20px; color: var(--accent);">✓</h1><h2>Lesson Complete</h2><div class="main-action-container"><button class="big-btn" onclick="handleNextAction()">Return to Menu</button></div></div>`;
-        }
-
-        container.innerHTML = html;
-
-        // Trigger TTS - Note: We removed the display:none check so it speaks even if hidden
-        if (textToSpeak) {
-            narratorEl.innerText = textToSpeak;
-            speak(textToSpeak, audioCallback);
-        } else {
-            narratorEl.innerText = "...";
-        }
+            
+            tbody.appendChild(tr);
+        });
     }
-
-    // Initialize voices
-    window.speechSynthesis.onvoiceschanged = () => {};
 </script>
 
 </body>

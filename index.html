@@ -8,16 +8,16 @@
     <style>
         /* GLOBAL FONTS & COLORS */
         :root {
-            --primary: #2c3e50;
-            --accent: #27ae60;
-            --missed: #e67e22; /* Orange for missed items */
+            --primary: #2c3e50; /* Dark Slate */
+            --accent: #27ae60;  /* Green */
             --light: #ecf0f1;
             --speaker-a: #e8f6f3;
             --speaker-b: #fef9e7;
-            --step-active: #3498db;
+            --step-active: #3498db; /* Blue */
             --blur-bg: #dfe6e9;
         }
 
+        /* Enforce Segoe UI Everywhere */
         body, button, select, input, h1, h2, h3, h4, div, span, p, li, a {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
         }
@@ -45,7 +45,7 @@
         .checkmark { position: absolute; top: 10px; right: 10px; color: var(--accent); font-weight: bold; font-size: 1.2rem; display: none; }
         .lesson-card.completed .checkmark { display: block; }
         
-        /* SPECIAL REVIEW CARD */
+        /* REVIEW CARD */
         .lesson-card.review-card { border-color: var(--step-active); background: #eef9fe; box-shadow: 0 4px 0 #aecde0; }
         .lesson-card.review-card h3 { color: var(--step-active); }
 
@@ -55,6 +55,7 @@
             font-size: 0.95rem; display: none; align-items: center; gap: 15px; cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
         }
+        #narrator-box:active { background: #2c3e50; transform: translateY(1px); }
         .tts-label { font-weight: bold; text-transform: uppercase; font-size: 0.7rem; color: #bdc3c7; margin-right: 10px; }
         .skip-hint { font-size: 0.7rem; color: #7f8c8d; margin-left: auto; opacity: 0.6; }
 
@@ -70,7 +71,7 @@
 
         /* CARD VIEW */
         .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
-        .narrator-slide { background: #fff; border-left: 6px solid var(--step-active); padding: 30px; border-radius: 12px; font-size: 1.3rem; line-height: 1.6; color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .narrator-slide { background: #fff; border-left: 6px solid var(--step-active); padding: 30px; border-radius: 12px; font-size: 1.3rem; line-height: 1.6; color: var(--primary); max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
         .hidden-content-box { background: transparent; border-radius: 12px; padding: 20px; transition: all 0.3s ease; cursor: pointer; width: 100%; }
         .hidden-content-box.obscured { background: var(--blur-bg); user-select: none; }
@@ -83,36 +84,18 @@
         .reveal-hint { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #95a5a6; margin-bottom: 8px; opacity: 0; transition: opacity 0.3s; }
         .reveal-hint.visible { opacity: 1; }
 
-        /* IMAGE SUPPORT */
         .card-image { max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 15px; object-fit: cover; }
-
-        /* CONTROLS & UTILS */
-        .controls-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; align-items: center; }
-        .speed-toggle { background: #eee; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; font-weight: bold; color: #555; }
-        .speed-toggle:hover { background: #ddd; }
-        
-        .mic-btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: #eee; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .mic-btn.recording { background: #e74c3c; color: white; animation: pulse 1.5s infinite; }
-        .mic-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-
         .media-container { width: 100%; margin-bottom: 10px; max-width: 500px; }
         
         /* ACTION BUTTONS */
         .main-action-container { margin-top: auto; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; display: flex; justify-content: center; gap: 10px; }
         .big-btn { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: 700; text-transform: uppercase; box-shadow: 0 4px 0 #1a252f; transition: transform 0.1s; min-width: 120px; }
         .big-btn:active { transform: translateY(4px); box-shadow: none; }
+        .big-btn:hover { filter: brightness(1.1); }
         
         .big-btn.secondary { background: white; color: #7f8c8d; border: 2px solid #e5e5e5; box-shadow: 0 4px 0 #e5e5e5; }
         .big-btn.secondary:active { box-shadow: none; }
         
-        .big-btn.missed { background: var(--missed); box-shadow: 0 4px 0 #d35400; }
-        .big-btn.missed:active { box-shadow: none; }
-
-        .big-btn.got-it { background: var(--accent); box-shadow: 0 4px 0 #219150; }
-        .big-btn.got-it:active { box-shadow: none; }
-
         .stop-btn { background: #e74c3c; box-shadow: 0 4px 0 #c0392b; width: 100%; margin-top: 10px;}
 
         .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #95a5a6; text-decoration: underline; cursor: pointer; }
@@ -159,19 +142,13 @@
         filename: "",
         goalsText: "", 
         phase: null,
-        slideIndex: 0,
-        playbackSpeed: 1.0
+        slideIndex: 0
     };
 
     let autoPlayActive = false; 
     let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
     let pendingAudioCallback = null; 
     
-    // Recording State
-    let mediaRecorder;
-    let audioChunks = [];
-    let recordedAudioURL = null;
-
     // --- INIT ---
     window.onload = () => { renderMenu(); };
 
@@ -192,12 +169,12 @@
             grid.appendChild(card);
         });
 
-        // 2. Global Review Button (only if lessons completed)
+        // 2. Review Button (Simple Logic)
         if (completedLessons.length > 0) {
             const reviewCard = document.createElement('div');
             reviewCard.className = `lesson-card review-card`;
-            reviewCard.onclick = () => startGlobalReview();
-            reviewCard.innerHTML = `<h3>⚡ Global Review</h3><div class="status" style="color:#3498db">Test Yourself</div>`;
+            reviewCard.onclick = () => startReview();
+            reviewCard.innerHTML = `<h3>Review</h3><div class="status" style="color:#3498db">Test Yourself</div>`;
             grid.appendChild(reviewCard);
         }
 
@@ -241,12 +218,12 @@
         });
     }
 
-    // --- GLOBAL REVIEW LOGIC ---
-    async function startGlobalReview() {
+    // --- REVIEW LOGIC ---
+    async function startReview() {
         if (completedLessons.length === 0) return;
         state.filename = "review";
-        state.title = "Global Review";
-        state.goalsText = "This is a random selection of 10 recall/test items from lessons you have completed.";
+        state.title = "Review";
+        state.goalsText = "Reviewing random items from your completed lessons.";
         state.conversationData = []; // No convo in review
         
         let allItems = [];
@@ -257,7 +234,7 @@
                 Papa.parse(file, {
                     download: true, header: true, skipEmptyLines: true,
                     complete: (res) => {
-                        // Get only test/recall items
+                        // Get ONLY 'r' (Recall) and 't' (Test) items. Exclude 'n' (Notes).
                         const items = res.data.filter(r => ['r', 't'].includes(r.type ? r.type.toLowerCase().trim() : ''));
                         allItems = allItems.concat(items);
                         resolve();
@@ -334,16 +311,6 @@
         }
     }
 
-    // --- SELF GRADING LOGIC ---
-    function handleMissedIt() {
-        // Push current item to end of array
-        const currentItem = state.sequenceData[state.slideIndex];
-        state.sequenceData.push(currentItem);
-        
-        // Move to next (which is now just the next index)
-        handleNextAction();
-    }
-
     // --- KEYBOARD SHORTCUTS ---
     document.addEventListener('keydown', (e) => {
         if (document.getElementById('app-content').style.display === 'none') return;
@@ -355,17 +322,10 @@
             else playCurrentSlideAudio();
         }
         if (e.code === 'ArrowRight') {
-            // Check if there is a "Next" or "Got it" button
-            const nextBtn = document.querySelector('.big-btn.got-it') || document.querySelector('.big-btn:not(.secondary)');
-            if(nextBtn) nextBtn.click();
+            handleNextAction();
         }
         if (e.code === 'ArrowLeft') {
-             // Check if "Missed it" or "Back"
-             const backBtn = document.querySelector('.big-btn.missed') || document.querySelector('.big-btn.secondary');
-             if(backBtn) backBtn.click();
-        }
-        if (e.code === 'KeyR') {
-             toggleRecording();
+             handlePrevAction();
         }
     });
 
@@ -390,46 +350,7 @@
     function playCurrentSlideAudio() {
         const audio = document.querySelector('.card-view .slide-audio');
         if (audio) {
-            audio.playbackRate = state.playbackSpeed;
             audio.play().catch(e => console.log("Audio play blocked", e));
-        }
-    }
-
-    function toggleSpeed() {
-        state.playbackSpeed = (state.playbackSpeed === 1.0) ? 0.75 : 1.0;
-        // Update button visual
-        const btn = document.getElementById('speed-btn');
-        if(btn) btn.innerText = `${state.playbackSpeed}x`;
-    }
-
-    // --- RECORDING LOGIC ---
-    async function toggleRecording() {
-        const btn = document.getElementById('mic-btn');
-        if (!btn) return;
-
-        if (mediaRecorder && mediaRecorder.state === "recording") {
-            mediaRecorder.stop();
-            btn.classList.remove('recording');
-            btn.innerText = "🎤";
-        } else {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    recordedAudioURL = URL.createObjectURL(audioBlob);
-                    // Create and append user audio player
-                    const container = document.getElementById('user-audio-container');
-                    container.innerHTML = `<div>Your Recording:</div><audio controls src="${recordedAudioURL}" style="width:100%"></audio>`;
-                };
-                mediaRecorder.start();
-                btn.classList.add('recording');
-                btn.innerText = "⬛";
-            } catch (err) {
-                alert("Microphone access denied or not supported in this environment (HTTPS required).");
-            }
         }
     }
 
@@ -450,7 +371,6 @@
 
         const audio = currentRow.querySelector('audio');
         if (audio) {
-            audio.playbackRate = state.playbackSpeed;
             audio.play().then(() => {
                 audio.onended = () => { if(autoPlayActive) playConversationIndex(index + 1); };
             }).catch(() => { setTimeout(() => { if(autoPlayActive) playConversationIndex(index + 1); }, 2000); });
@@ -464,7 +384,7 @@
         document.querySelectorAll('.chat-row').forEach(r => r.classList.remove('active-playing'));
     }
 
-    // --- TTS ---
+    // --- TTS & CALLBACKS ---
     function speak(text, callback) {
         cancelTTS(); 
         if (!window.speechSynthesis) return;
@@ -487,7 +407,7 @@
     function revealAndPlay(element) {
         element.classList.remove('obscured'); element.classList.add('revealed');
         const audio = element.querySelector('audio');
-        if(audio) { audio.currentTime = 0; audio.playbackRate = state.playbackSpeed; audio.play().catch(e=>console.log(e)); }
+        if(audio) { audio.currentTime = 0; audio.play().catch(e=>console.log(e)); }
     }
 
     // --- MAIN RENDER ---
@@ -504,7 +424,7 @@
 
         // 1. GOALS
         if (state.phase === 'goals') {
-            textToSpeak = state.filename === 'review' ? "Global Review." : `Welcome to ${state.title}.`;
+            textToSpeak = state.filename === 'review' ? "Review." : `Welcome to ${state.title}.`;
             const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
             html = `
                 <h2>Topic: ${state.title}</h2>
@@ -514,7 +434,7 @@
         // 2. CONVERSATION
         else if (state.phase === 'conversation') {
             textToSpeak = "Listen to the conversation.";
-            html = `<div style="text-align:right; margin-bottom:10px;"><button class="speed-toggle" id="speed-btn" onclick="toggleSpeed()">1.0x</button></div><div class="chat-container">`;
+            html = `<div class="chat-container">`;
             state.conversationData.forEach((row, i) => {
                 const spClass = row.speaker.includes('A') ? 'speaker-A' : 'speaker-B';
                 html += `<div class="chat-row ${spClass}" id="row-${i}">
@@ -542,7 +462,7 @@
 
             // NOTE ('n')
             if (type === 'n') {
-                narratorBox.style.display = 'none';
+                narratorBox.style.display = 'none'; // HIDE BOX
                 html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div><div class="main-action-container"><button class="big-btn" onclick="handleNextAction()">Next</button></div>`;
             }
             // PRACTICE ('p') & RECALL ('r')
@@ -556,38 +476,20 @@
                 // Image?
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
-                // Buttons
-                let buttons = "";
-                if (isRecall) {
-                     buttons = `
-                        <button class="big-btn missed" onclick="handleMissedIt()">Missed it</button>
-                        <button class="big-btn got-it" onclick="handleNextAction()">Got it</button>
-                     `;
-                } else {
-                     buttons = `
-                        ${state.slideIndex > 0 ? `<button class="big-btn secondary" onclick="handlePrevAction()">Back</button>` : ''}
-                        <button class="big-btn" onclick="handleNextAction()">Next</button>
-                     `;
-                }
-
                 html = `
                     <div class="card-view">
                         ${imgHtml}
-                        <div class="controls-row">
-                             <button class="speed-toggle" id="speed-btn" onclick="toggleSpeed()">1.0x</button>
-                             <button class="mic-btn" id="mic-btn" onclick="toggleRecording()">🎤</button>
-                        </div>
-                        <div id="user-audio-container" style="margin-bottom:10px; width:100%; max-width:500px"></div>
-                        
                         ${renderMedia(row.audio_url)}
-                        
                         <div class="${hintClass}">Tap to reveal</div>
                         <div class="${contentClass}" ${onClickAttr}>
                             <div class="native-text">${row.ayajuthem}</div>
                             <div class="translation">${row.english}</div>
                         </div>
                     </div>
-                    <div class="main-action-container">${buttons}</div>`;
+                    <div class="main-action-container">
+                        ${state.slideIndex > 0 ? `<button class="big-btn secondary" onclick="handlePrevAction()">Back</button>` : ''}
+                        <button class="big-btn" onclick="handleNextAction()">Next</button>
+                    </div>`;
             }
             // TEST ('t')
             else if (type === 't') {
@@ -598,7 +500,6 @@
                 html = `
                     <div class="card-view">
                         ${imgHtml}
-                        <div class="controls-row"><button class="speed-toggle" id="speed-btn" onclick="toggleSpeed()">1.0x</button></div>
                         <div class="prompt-text">How would you say: <br><span style="font-size:1.5rem; color:#4b4b4b">"${row.english}"</span>?</div>
                         <div class="reveal-hint visible">Tap to reveal & play</div>
                         <div class="${contentClass}" ${onClickAttr}>
@@ -607,8 +508,8 @@
                         </div>
                     </div>
                     <div class="main-action-container">
-                        <button class="big-btn missed" onclick="handleMissedIt()">Missed it</button>
-                        <button class="big-btn got-it" onclick="handleNextAction()">Got it</button>
+                        ${state.slideIndex > 0 ? `<button class="big-btn secondary" onclick="handlePrevAction()">Back</button>` : ''}
+                        <button class="big-btn" onclick="handleNextAction()">Next</button>
                     </div>`;
             }
         }
@@ -621,10 +522,6 @@
         container.innerHTML = html;
         if (textToSpeak) { narratorEl.innerText = textToSpeak; speak(textToSpeak, audioCallback); } 
         else { narratorEl.innerText = "..."; }
-        
-        // Ensure button state is correct if re-rendering practice
-        const speedBtn = document.getElementById('speed-btn');
-        if(speedBtn) speedBtn.innerText = `${state.playbackSpeed}x`;
     }
 
     window.speechSynthesis.onvoiceschanged = () => {};

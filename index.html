@@ -8,12 +8,12 @@
     <style>
         /* GLOBAL FONTS & COLORS */
         :root {
-            --primary: #2c3e50; 
-            --accent: #27ae60; 
+            --primary: #2c3e50; /* Dark Slate */
+            --accent: #27ae60;  /* Green */
             --light: #ecf0f1;
             --speaker-a: #e8f6f3;
             --speaker-b: #fef9e7;
-            --step-active: #3498db; 
+            --step-active: #3498db; /* Blue */
             --blur-bg: #dfe6e9;
         }
 
@@ -37,10 +37,13 @@
         .lesson-card {
             background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 0 #e5e5e5; border: 2px solid #e5e5e5;
             cursor: pointer; transition: transform 0.1s; text-align: center; position: relative;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100px;
         }
         .lesson-card:active { transform: translateY(4px); box-shadow: 0 0 0 #e5e5e5; }
-        .lesson-card h3 { margin: 0; font-size: 1.1rem; color: var(--primary); }
+        .lesson-card h3 { margin: 0; font-size: 1.2rem; color: var(--primary); font-weight: 600; }
+        
         .lesson-card .status { font-size: 0.8rem; color: #95a5a6; margin-top: 5px; text-transform: uppercase; font-weight: bold; }
+        
         .lesson-card.completed { border-color: var(--accent); background: #f0fdf4; box-shadow: 0 4px 0 #badcba; }
         .checkmark { position: absolute; top: 10px; right: 10px; color: var(--accent); font-weight: bold; font-size: 1.2rem; display: none; }
         .lesson-card.completed .checkmark { display: block; }
@@ -85,30 +88,7 @@
         .reveal-hint.visible { opacity: 1; }
 
         .card-image { max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 15px; object-fit: cover; }
-        
-        /* VISUALIZER */
-        .visualizer-wrapper {
-            position: relative;
-            width: 100%;
-            height: 80px;
-            background: #f0f3f4;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        /* Hide default audio player since we have visualizer? 
-           Actually, let's keep it hidden but present for functionality 
-        */
-        .slide-audio { display: none; } 
-
+        .media-container { width: 100%; margin-bottom: 10px; max-width: 500px; }
         
         /* ACTION BUTTONS */
         .main-action-container { margin-top: auto; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; display: flex; justify-content: center; gap: 10px; }
@@ -172,97 +152,15 @@
     let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
     let pendingAudioCallback = null; 
     
-    // Audio Context for Visualizer
-    let audioCtx;
-    let analyser;
-    let sourceNode;
-    let animationFrameId;
-
     // --- INIT ---
     window.onload = () => { renderMenu(); };
-
-    // --- VISUALIZER LOGIC ---
-    function initAudioContext() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 256;
-        }
-    }
-
-    function connectAudioVisualizer(audioElement, canvasElement) {
-        initAudioContext();
-        
-        // Re-use source node if possible, but audio elements change
-        // Note: MediaElementSource can only be created once per element. 
-        // We need to check if it's already connected or create a new one carefully.
-        // Simplified: We assume a fresh render creates fresh DOM elements.
-        
-        try {
-            sourceNode = audioCtx.createMediaElementSource(audioElement);
-            sourceNode.connect(analyser);
-            analyser.connect(audioCtx.destination);
-        } catch(e) {
-            // Already connected, ignore
-        }
-
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        const ctx = canvasElement.getContext("2d");
-
-        function draw() {
-            animationFrameId = requestAnimationFrame(draw);
-            
-            const width = canvasElement.width;
-            const height = canvasElement.height;
-
-            ctx.clearRect(0, 0, width, height);
-
-            // 1. Draw Waveform (Frequency)
-            analyser.getByteFrequencyData(dataArray);
-            
-            const barWidth = (width / bufferLength) * 2.5;
-            let barHeight;
-            let x = 0;
-
-            for(let i = 0; i < bufferLength; i++) {
-                barHeight = dataArray[i] / 2;
-                ctx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`; // Reddish tint
-                // Center the bars vertically
-                const y = (height - barHeight) / 2;
-                ctx.fillRect(x, y, barWidth, barHeight);
-                x += barWidth + 1;
-            }
-
-            // 2. Draw Playhead Line
-            if(audioElement.duration) {
-                const progress = audioElement.currentTime / audioElement.duration;
-                const playheadX = progress * width;
-                
-                ctx.beginPath();
-                ctx.moveTo(playheadX, 0);
-                ctx.lineTo(playheadX, height);
-                ctx.strokeStyle = '#2c3e50';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-        }
-        
-        // Handle High DPI displays
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvasElement.getBoundingClientRect();
-        canvasElement.width = rect.width * dpr;
-        canvasElement.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
-
-        draw();
-    }
 
     // --- MENU LOGIC ---
     function renderMenu() {
         const grid = document.getElementById('menu-grid');
         grid.innerHTML = "";
         
+        // 1. Regular Lessons
         lessonManifest.forEach(filename => {
             const cleanName = filename.replace('.csv', '').replace(/^\d+_/, '').replace(/_/g, ' ');
             const isDone = completedLessons.includes(filename);
@@ -270,10 +168,13 @@
             const card = document.createElement('div');
             card.className = `lesson-card ${isDone ? 'completed' : ''}`;
             card.onclick = () => loadLesson(filename);
-            card.innerHTML = `<div class="checkmark">✓</div><h3>${cleanName}</h3><div class="status">${isDone ? 'Completed' : 'Start'}</div>`;
+            
+            const statusHtml = isDone ? `<div class="status">Completed</div>` : '';
+            card.innerHTML = `<div class="checkmark">✓</div><h3>${cleanName}</h3>${statusHtml}`;
             grid.appendChild(card);
         });
 
+        // 2. Review Button
         if (completedLessons.length > 0) {
             const reviewCard = document.createElement('div');
             reviewCard.className = `lesson-card review-card`;
@@ -325,7 +226,7 @@
     // --- REVIEW LOGIC ---
     async function startReview() {
         if (completedLessons.length === 0) return;
-        state.filename = "review";
+        state.filename = "review"; // Important for silent mode
         state.title = "Review";
         state.goalsText = "Reviewing random items from your completed lessons.";
         state.conversationData = []; 
@@ -347,7 +248,8 @@
         state.sequenceData = allItems.slice(0, 10);
 
         switchView('app');
-        document.getElementById('narrator-box').style.display = 'flex';
+        // Hide narrator box immediately for review
+        document.getElementById('narrator-box').style.display = 'none';
         transitionToPhase('goals');
     }
 
@@ -355,7 +257,6 @@
     function transitionToPhase(newPhase) {
         stopConversationPlayback();
         cancelTTS();
-        if(animationFrameId) cancelAnimationFrame(animationFrameId); // Stop visuals
         state.phase = newPhase;
         state.slideIndex = 0; 
         updateProgressBar();
@@ -424,29 +325,15 @@
         if (e.code === 'ArrowLeft') handlePrevAction();
     });
 
-    // --- VISUALIZER RENDERER ---
-    function renderVisualizer(url) {
+    // --- AUDIO & MEDIA UTILS ---
+    function renderMedia(url) {
         if (!url) return '';
         const ytId = getYoutubeId(url);
         if (ytId) {
             return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
         } else {
-            // Return canvas AND hidden audio
-            return `
-                <div class="visualizer-wrapper">
-                    <canvas id="viz-canvas"></canvas>
-                </div>
-                <audio class="slide-audio" src="${url}" crossorigin="anonymous"></audio>
-            `;
+            return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
         }
-    }
-    
-    // Conversation mode doesn't need canvas per row, too heavy. Just standard.
-    function renderSimpleMedia(url) {
-        if (!url) return '';
-        const ytId = getYoutubeId(url);
-        if (ytId) return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
-        return `<div class="media-container"><audio class="convo-audio" controls src="${url}" style="width:100%;"></audio></div>`;
     }
 
     function getYoutubeId(url) {
@@ -457,15 +344,8 @@
     }
 
     function playCurrentSlideAudio() {
-        // Init Audio Context on first user interaction
-        if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        
-        const audio = document.querySelector('.slide-audio');
-        const canvas = document.getElementById('viz-canvas');
-        
-        if (audio && canvas) {
-            // Hook up visualizer if not already
-            connectAudioVisualizer(audio, canvas);
+        const audio = document.querySelector('.card-view .slide-audio');
+        if (audio) {
             audio.play().catch(e => console.log("Audio play blocked", e));
         }
     }
@@ -522,8 +402,8 @@
     }
     function revealAndPlay(element) {
         element.classList.remove('obscured'); element.classList.add('revealed');
-        // Trigger visualizer play
-        playCurrentSlideAudio();
+        const audio = element.querySelector('audio');
+        if(audio) { audio.currentTime = 0; audio.play().catch(e=>console.log(e)); }
     }
 
     // --- MAIN RENDER ---
@@ -536,11 +416,17 @@
         let html = "";
         let audioCallback = null; 
 
-        narratorBox.style.display = 'flex';
+        // Narrator Box Display Logic:
+        // If in Review mode, ALWAYS hide.
+        // Otherwise, show default (flex), though 'Note' pages will hide it below.
+        narratorBox.style.display = (state.filename === 'review') ? 'none' : 'flex';
 
         // 1. GOALS
         if (state.phase === 'goals') {
             textToSpeak = state.filename === 'review' ? "Review." : `Welcome to ${state.title}.`;
+            // Silence narrator text if in review
+            if (state.filename === 'review') textToSpeak = "";
+
             const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
             html = `
                 <h2>Topic: ${state.title}</h2>
@@ -557,7 +443,7 @@
                     <span class="speaker-label">${row.speaker}</span>
                     <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
                     <div style="font-size:0.9rem; color:#666; margin-bottom: 10px;">${row.english}</div>
-                    ${renderSimpleMedia(row.audio_url)}
+                    ${renderMedia(row.audio_url)}
                 </div>`;
             });
             html += `</div><div class="main-action-container" style="flex-direction:column;"><button class="big-btn" onclick="handleNextAction()">Practice</button><button class="big-btn secondary stop-btn" onclick="stopConversationPlayback()">Stop</button></div>`;
@@ -568,12 +454,17 @@
             const row = state.sequenceData[state.slideIndex];
             const type = row.type.toLowerCase().trim();
 
-            if (row.narrator_text && row.narrator_text.trim().length > 0) textToSpeak = row.narrator_text;
-            else {
-                if(type === 'n') textToSpeak = "Note.";
-                else if(type === 'r') textToSpeak = "Recall.";
-                else if(type === 't') textToSpeak = "How would you say this?";
-                else if(type === 'p') textToSpeak = "Repeat.";
+            // Set TTS Text (only if NOT review)
+            if (state.filename !== 'review') {
+                if (row.narrator_text && row.narrator_text.trim().length > 0) textToSpeak = row.narrator_text;
+                else {
+                    if(type === 'n') textToSpeak = "Note.";
+                    else if(type === 'r') textToSpeak = "Recall.";
+                    else if(type === 't') textToSpeak = "How would you say this?";
+                    else if(type === 'p') textToSpeak = "Repeat.";
+                }
+            } else {
+                textToSpeak = ""; // Explicitly silent for review
             }
 
             // NOTE ('n')
@@ -593,7 +484,7 @@
                 html = `
                     <div class="card-view">
                         ${imgHtml}
-                        ${renderVisualizer(row.audio_url)}
+                        ${renderMedia(row.audio_url)}
                         <div class="${hintClass}">Tap to reveal</div>
                         <div class="${contentClass}" ${onClickAttr}>
                             <div class="native-text">${row.ayajuthem}</div>
@@ -617,7 +508,7 @@
                         <div class="prompt-text">How would you say: <br><span style="font-size:1.5rem; color:#4b4b4b">"${row.english}"</span>?</div>
                         <div class="reveal-hint visible">Tap to reveal & play</div>
                         <div class="${contentClass}" ${onClickAttr}>
-                            ${renderVisualizer(row.audio_url)}
+                            ${renderMedia(row.audio_url)}
                             <div class="native-text">${row.ayajuthem}</div>
                         </div>
                     </div>
@@ -629,13 +520,23 @@
         }
         // 4. FINISH
         else if (state.phase === 'finish') {
-            textToSpeak = "Lesson complete.";
+            textToSpeak = state.filename === 'review' ? "Review complete." : "Lesson complete.";
+            if (state.filename === 'review') textToSpeak = ""; // Silent for review finish too? Or keep it? Keeping it brief.
+
             html = `<div style="text-align:center; margin-top:50px;"><h1 style="font-size:3rem; margin-bottom: 20px; color: var(--accent);">✓</h1><h2>Lesson Complete</h2><div class="main-action-container"><button class="big-btn" onclick="handleNextAction()">Return to Menu</button></div></div>`;
         }
 
         container.innerHTML = html;
-        if (textToSpeak) { narratorEl.innerText = textToSpeak; speak(textToSpeak, audioCallback); } 
-        else { narratorEl.innerText = "..."; }
+        
+        // TTS / Audio Trigger Logic
+        if (textToSpeak) { 
+            narratorEl.innerText = textToSpeak; 
+            speak(textToSpeak, audioCallback); 
+        } else { 
+            narratorEl.innerText = "..."; 
+            // If text is silent (Review mode), we must trigger the audioCallback manually!
+            if(audioCallback) audioCallback();
+        }
     }
 
     window.speechSynthesis.onvoiceschanged = () => {};

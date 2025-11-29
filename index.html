@@ -8,43 +8,66 @@
     <style>
         /* GLOBAL FONTS & COLORS */
         :root {
-            --primary: #2c3e50; /* Dark Slate */
-            --accent: #27ae60;  /* Green */
+            --primary: #2c3e50; 
+            --accent: #27ae60;  
             --light: #ecf0f1;
             --speaker-a: #e8f6f3;
             --speaker-b: #fef9e7;
-            --step-active: #3498db; /* Blue */
+            --step-active: #3498db; 
             --blur-bg: #dfe6e9;
             --highlight: #f1c40f; 
         }
 
-        /* Enforce Segoe UI Everywhere */
         body, button, select, input, h1, h2, h3, h4, div, span, p, li, a {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
         }
 
-        body { margin: 0; padding: 0; background: #f4f7f6; color: #333; }
+        /* FIT SCREEN LAYOUT */
+        html, body { 
+            margin: 0; padding: 0; 
+            background: #f4f7f6; color: #333; 
+            height: 100%; overflow: hidden; /* Prevent body scroll */
+        }
         
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { 
+            max-width: 800px; 
+            height: 100%; 
+            margin: 0 auto; 
+            padding: 20px; 
+            box-sizing: border-box; /* Include padding in height calc */
+            display: flex; 
+            flex-direction: column; 
+        }
         
         header { 
-            background: var(--primary); color: white; padding: 1rem; text-align: center; border-radius: 0 0 16px 16px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            background: var(--primary); color: white; padding: 1rem; text-align: center; 
+            border-radius: 0; /* Square corners */
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
             display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0; /* Never shrink header */
         }
         header h2 { margin: 0; font-weight: 700; letter-spacing: 1px; flex-grow: 1; text-align: center; }
 
-        /* EXIT BUTTON */
+        /* SUBTLE EXIT BUTTON */
         .exit-btn {
-            background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 20px;
-            cursor: pointer; font-weight: bold; font-size: 0.8rem; display: none; transition: background 0.2s;
+            background: transparent; 
+            color: rgba(255,255,255,0.7); 
+            border: 1px solid rgba(255,255,255,0.3); 
+            padding: 5px 10px; 
+            border-radius: 4px;
+            cursor: pointer; font-weight: normal; font-size: 0.8rem; 
+            display: none; transition: all 0.2s;
         }
-        .exit-btn:hover { background: #c0392b; }
+        .exit-btn:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
 
         /* PROGRESS BAR */
-        .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; margin-bottom: 20px; overflow: hidden; display:none; }
+        .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; margin-bottom: 20px; overflow: hidden; display:none; flex-shrink: 0; }
         .progress-bar { height: 100%; background-color: var(--accent); width: 0%; transition: width 0.3s ease; border-radius: 10px; }
 
         /* MENU GRID */
+        /* Scrollable Menu if list is long */
+        #menu-view { overflow-y: auto; flex-grow: 1; }
         .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 20px; }
         .lesson-card {
             background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 0 #e5e5e5; border: 2px solid #e5e5e5;
@@ -54,33 +77,29 @@
         .lesson-card:active { transform: translateY(4px); box-shadow: 0 0 0 #e5e5e5; }
         .lesson-card:hover { border-color: var(--step-active); }
         .lesson-card h3 { margin: 0; font-size: 1.2rem; color: var(--primary); font-weight: 600; }
-        
         .lesson-card .status { font-size: 0.8rem; color: var(--accent); margin-top: 5px; text-transform: uppercase; font-weight: bold; }
-        
         .lesson-card.completed { border-color: var(--accent); background: #f0fdf4; box-shadow: 0 4px 0 #badcba; }
         .checkmark { position: absolute; top: 10px; right: 10px; color: var(--accent); font-weight: bold; font-size: 1.2rem; display: none; }
         .lesson-card.completed .checkmark { display: block; }
-        
-        /* REVIEW CARD */
         .lesson-card.review-card { border-color: var(--step-active); background: #eef9fe; box-shadow: 0 4px 0 #aecde0; }
         .lesson-card.review-card h3 { color: var(--step-active); }
-
-        /* RESET LINK */
-        .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #95a5a6; text-decoration: underline; cursor: pointer; }
-        .reset-link:hover { color: #e74c3c; }
 
         /* NARRATOR */
         #narrator-box { 
             background: #34495e; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; 
             font-size: 0.95rem; display: none; align-items: center; gap: 15px; cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex-shrink: 0;
         }
-        #narrator-box:active { background: #2c3e50; transform: translateY(1px); }
         .tts-label { font-weight: bold; text-transform: uppercase; font-size: 0.7rem; color: #bdc3c7; margin-right: 10px; }
         .skip-hint { font-size: 0.7rem; color: #7f8c8d; margin-left: auto; opacity: 0.6; }
 
-        /* MAIN CONTENT */
-        #app-content { background: white; padding: 30px; border-radius: 16px; border: 2px solid #e5e5e5; box-shadow: 0 4px 0 #e5e5e5; flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+        /* MAIN CONTENT SCROLL AREA */
+        #app-content { 
+            background: white; padding: 30px; border-radius: 16px; border: 2px solid #e5e5e5; box-shadow: 0 4px 0 #e5e5e5; 
+            flex-grow: 1; /* Takes remaining height */
+            overflow-y: auto; /* Internal scrolling */
+            display: flex; flex-direction: column; position: relative; 
+        }
 
         /* CHAT VIEW */
         .chat-container { flex-grow: 1; margin-bottom: 20px; }
@@ -106,10 +125,15 @@
         .reveal-hint.visible { opacity: 1; }
 
         .card-image { max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 15px; object-fit: cover; }
-        .media-container { width: 100%; margin-bottom: 10px; max-width: 500px; }
+        
+        /* MEDIA */
+        .media-container { 
+            width: 100%; margin-bottom: 10px; max-width: 500px; 
+            display: flex; justify-content: center; /* Center Content */
+        }
         
         /* ACTION BUTTONS */
-        .main-action-container { margin-top: auto; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; display: flex; justify-content: center; gap: 10px; }
+        .main-action-container { margin-top: auto; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; display: flex; justify-content: center; gap: 10px; flex-shrink: 0; }
         .big-btn { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: 700; text-transform: uppercase; box-shadow: 0 4px 0 #1a252f; transition: transform 0.1s; min-width: 120px; }
         .big-btn:active { transform: translateY(4px); box-shadow: none; }
         .big-btn:hover { filter: brightness(1.1); }
@@ -117,8 +141,8 @@
         .big-btn.secondary { background: white; color: #7f8c8d; border: 2px solid #e5e5e5; box-shadow: 0 4px 0 #e5e5e5; }
         .big-btn.secondary:active { box-shadow: none; }
         
-        .stop-btn { background: #e74c3c; box-shadow: 0 4px 0 #c0392b; width: 100%; margin-top: 10px;}
-        .stop-btn:active { box-shadow: none; transform: translateY(4px); }
+        .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #95a5a6; text-decoration: underline; cursor: pointer; padding-bottom: 20px;}
+        .reset-link:hover { color: #e74c3c; }
 
     </style>
 </head>
@@ -126,7 +150,7 @@
 
 <header>
     <div style="width:60px;"></div> <h2>Ayalingo</h2>
-    <button id="exit-btn" class="exit-btn" onclick="exitLesson()">EXIT</button>
+    <button id="exit-btn" class="exit-btn" onclick="exitLesson()">Exit</button>
 </header>
 
 <div class="container">
@@ -193,7 +217,6 @@
             grid.appendChild(card);
         });
 
-        // Review Card only appears if user has progress
         if (completedLessons.length > 0) {
             const reviewCard = document.createElement('div');
             reviewCard.className = `lesson-card review-card`;
@@ -258,7 +281,7 @@
         state.conversationData = []; 
         
         let allItems = [];
-        for (const file of completedLessons) { // Only review completed lessons
+        for (const file of completedLessons) {
             await new Promise(resolve => {
                 Papa.parse(file, {
                     download: true, header: true, skipEmptyLines: true,
@@ -318,12 +341,11 @@
             }
         }
         else if (state.phase === 'finish') {
-            // Save Progress
             if (state.filename !== 'review' && !completedLessons.includes(state.filename)) {
                 completedLessons.push(state.filename);
                 localStorage.setItem('ayalingo_progress', JSON.stringify(completedLessons));
             }
-            renderMenu(); // Return to menu
+            renderMenu(); 
         }
     }
 
@@ -444,12 +466,11 @@
         let html = "";
         let audioCallback = null; 
 
-        // Narrator Box Display: Only show if needed (Goals or Notes)
         narratorBox.style.display = 'none'; 
 
         // 1. GOALS
         if (state.phase === 'goals') {
-            textToSpeak = state.filename === 'review' ? "" : state.goalsText; // Read goals text!
+            textToSpeak = state.filename === 'review' ? "" : state.goalsText; 
             const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
             html = `
                 <h2>Topic: ${state.title}</h2>
@@ -477,7 +498,6 @@
             });
             html += `</div><div class="main-action-container">
                 <button class="big-btn" onclick="handleNextAction()">Next: Practice</button><br>
-                <button class="stop-btn" onclick="stopConversationPlayback()">[Stop Audio]</button>
                 <button class="big-btn secondary" onclick="handlePrevAction()">< Back</button>
             </div>`;
             setTimeout(() => { startConversationPlayback(); }, 100);
@@ -489,9 +509,9 @@
 
             if (state.filename !== 'review') {
                 if (type === 'n') {
-                    textToSpeak = row.narrator_text; // Speak note
+                    textToSpeak = row.narrator_text; 
                 } else if (state.slideIndex === 0) {
-                    textToSpeak = "Now, let's practice."; // Transition only
+                    textToSpeak = "Now, let's practice."; 
                 }
             } else {
                 textToSpeak = ""; 

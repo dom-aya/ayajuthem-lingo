@@ -54,8 +54,20 @@
         .lesson-card:active { transform: translateY(4px); box-shadow: 0 0 0 #e5e5e5; }
         .lesson-card:hover { border-color: var(--step-active); }
         .lesson-card h3 { margin: 0; font-size: 1.2rem; color: var(--primary); font-weight: 600; }
+        
+        .lesson-card .status { font-size: 0.8rem; color: var(--accent); margin-top: 5px; text-transform: uppercase; font-weight: bold; }
+        
+        .lesson-card.completed { border-color: var(--accent); background: #f0fdf4; box-shadow: 0 4px 0 #badcba; }
+        .checkmark { position: absolute; top: 10px; right: 10px; color: var(--accent); font-weight: bold; font-size: 1.2rem; display: none; }
+        .lesson-card.completed .checkmark { display: block; }
+        
+        /* REVIEW CARD */
         .lesson-card.review-card { border-color: var(--step-active); background: #eef9fe; box-shadow: 0 4px 0 #aecde0; }
         .lesson-card.review-card h3 { color: var(--step-active); }
+
+        /* RESET LINK */
+        .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #95a5a6; text-decoration: underline; cursor: pointer; }
+        .reset-link:hover { color: #e74c3c; }
 
         /* NARRATOR */
         #narrator-box { 
@@ -121,6 +133,7 @@
     
     <div id="menu-view">
         <div id="menu-grid" class="menu-grid"></div>
+        <div class="reset-link" onclick="resetProgress()">Reset Progress</div>
     </div>
 
     <div id="progress-container" class="progress-container">
@@ -156,6 +169,7 @@
     };
 
     let autoPlayActive = false; 
+    let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
     let pendingAudioCallback = null; 
     
     // --- INIT ---
@@ -168,18 +182,25 @@
         
         lessonManifest.forEach(filename => {
             const cleanName = filename.replace('.csv', '').replace(/^\d+_/, '').replace(/_/g, ' ');
+            const isDone = completedLessons.includes(filename);
+            
             const card = document.createElement('div');
-            card.className = `lesson-card`;
+            card.className = `lesson-card ${isDone ? 'completed' : ''}`;
             card.onclick = () => loadLesson(filename);
-            card.innerHTML = `<h3>${cleanName}</h3>`;
+            
+            const statusHtml = isDone ? `<div class="status">COMPLETED</div>` : '';
+            card.innerHTML = `<div class="checkmark">✓</div><h3>${cleanName}</h3>${statusHtml}`;
             grid.appendChild(card);
         });
 
-        const reviewCard = document.createElement('div');
-        reviewCard.className = `lesson-card review-card`;
-        reviewCard.onclick = () => startReview();
-        reviewCard.innerHTML = `<h3>Review Mode</h3>`;
-        grid.appendChild(reviewCard);
+        // Review Card only appears if user has progress
+        if (completedLessons.length > 0) {
+            const reviewCard = document.createElement('div');
+            reviewCard.className = `lesson-card review-card`;
+            reviewCard.onclick = () => startReview();
+            reviewCard.innerHTML = `<h3>Review Mode</h3>`;
+            grid.appendChild(reviewCard);
+        }
 
         switchView('menu');
     }
@@ -198,6 +219,14 @@
         stopConversationPlayback();
         cancelTTS();
         switchView('menu');
+    }
+
+    function resetProgress() {
+        if(confirm("Are you sure you want to reset all progress?")) {
+            localStorage.removeItem('ayalingo_progress');
+            completedLessons = [];
+            renderMenu();
+        }
     }
 
     // --- DATA LOADING ---
@@ -222,13 +251,14 @@
     }
 
     async function startReview() {
+        if (completedLessons.length === 0) return;
         state.filename = "review";
         state.title = "Review";
         state.goalsText = "Reviewing random items.";
         state.conversationData = []; 
         
         let allItems = [];
-        for (const file of lessonManifest) {
+        for (const file of completedLessons) { // Only review completed lessons
             await new Promise(resolve => {
                 Papa.parse(file, {
                     download: true, header: true, skipEmptyLines: true,
@@ -288,7 +318,12 @@
             }
         }
         else if (state.phase === 'finish') {
-            exitLesson();
+            // Save Progress
+            if (state.filename !== 'review' && !completedLessons.includes(state.filename)) {
+                completedLessons.push(state.filename);
+                localStorage.setItem('ayalingo_progress', JSON.stringify(completedLessons));
+            }
+            renderMenu(); // Return to menu
         }
     }
 
@@ -304,7 +339,6 @@
                 updateProgressBar();
                 render();
             } else {
-                // Back button from Practice goes to Conversation
                 if(state.conversationData.length > 0) transitionToPhase('conversation');
                 else transitionToPhase('goals');
             }

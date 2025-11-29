@@ -11,11 +11,8 @@
             --primary: #2c3e50; 
             --accent: #27ae60;  
             --light: #ecf0f1;
-            --speaker-a: #e8f6f3;
-            --speaker-b: #fef9e7;
             --step-active: #3498db; 
             --blur-bg: #dfe6e9;
-            --highlight: #f1c40f; 
         }
 
         * { box-sizing: border-box; }
@@ -48,11 +45,10 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
             flex-shrink: 0;
             display: grid;
-            grid-template-columns: 1fr auto 1fr; /* Center Title */
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
         }
         header h2 { margin: 0; font-weight: 700; letter-spacing: 1px; text-align: center; grid-column: 2; }
-        
         .header-right { grid-column: 3; text-align: right; }
 
         .exit-btn {
@@ -147,8 +143,6 @@
             box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform 0.1s; 
         }
         .big-btn:active { transform: translateY(4px); box-shadow: none; }
-        .big-btn:hover { filter: brightness(1.1); }
-        
         .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
         .big-btn.secondary:active { box-shadow: none; }
         
@@ -195,14 +189,8 @@
 </div>
 
 <script>
-    // --- CONFIGURATION ---
-    const lessonManifest = [
-        "01_Greetings.csv",
-        "02_Story.csv",
-        "03_Herring_Raking.csv"
-    ];
-
     // --- STATE ---
+    let lessonManifest = []; // Will be loaded from JSON
     let state = {
         conversationData: [], 
         sequenceData: [],     
@@ -218,26 +206,38 @@
     let pendingAudioCallback = null; 
     
     // --- INIT ---
-    window.onload = () => { renderMenu(); };
+    window.onload = () => { 
+        // Load the Manifest file first!
+        fetch('manifest.json')
+            .then(response => response.json())
+            .then(data => {
+                lessonManifest = data;
+                renderMenu(); 
+            })
+            .catch(err => {
+                console.error("Could not load manifest.json", err);
+                document.getElementById('menu-grid').innerHTML = "<p>Error loading lessons.</p>";
+            });
+    };
 
     // --- MENU LOGIC ---
     function renderMenu() {
         const grid = document.getElementById('menu-grid');
         grid.innerHTML = "";
         
-        lessonManifest.forEach(filename => {
-            const cleanName = filename.replace('.csv', '').replace(/^\d+_/, '').replace(/_/g, ' ');
-            const isDone = completedLessons.includes(filename);
+        lessonManifest.forEach(lesson => {
+            const isDone = completedLessons.includes(lesson.file);
             
             const card = document.createElement('div');
             card.className = `lesson-card ${isDone ? 'completed' : ''}`;
-            card.onclick = () => loadLesson(filename);
+            card.onclick = () => loadLesson(lesson);
             
             const statusHtml = isDone ? `<div class="status">COMPLETED</div>` : '';
-            card.innerHTML = `<div class="checkmark">✓</div><h3>${cleanName}</h3>${statusHtml}`;
+            card.innerHTML = `<div class="checkmark">✓</div><h3>${lesson.title}</h3>${statusHtml}`;
             grid.appendChild(card);
         });
 
+        // Review Card
         if (completedLessons.length > 0) {
             const reviewCard = document.createElement('div');
             reviewCard.className = `lesson-card review-card`;
@@ -288,14 +288,16 @@
     }
 
     // --- DATA LOADING ---
-    function loadLesson(filename) {
-        state.filename = filename;
-        state.title = filename.replace('.csv', '').replace(/^\d+_/, '').replace(/_/g, ' ');
+    function loadLesson(lessonObj) {
+        state.filename = lessonObj.file;
+        state.title = lessonObj.title;
 
-        const txtFile = filename.replace('.csv', '.txt');
+        // Assumes text file is same path but .txt instead of .csv
+        const txtFile = lessonObj.file.replace('.csv', '.txt');
+        
         fetch(txtFile).then(r => r.ok ? r.text() : "Goals not found.").then(text => {
             state.goalsText = text;
-            Papa.parse(filename, {
+            Papa.parse(lessonObj.file, {
                 download: true, header: true, skipEmptyLines: true,
                 complete: (results) => {
                     const raw = results.data;
@@ -450,6 +452,7 @@
         autoPlayActive = true;
         setTimeout(() => { playConversationIndex(0); }, 500);
     }
+    
     function playConversationIndex(index) {
         if (!autoPlayActive) return;
         const rows = document.querySelectorAll('.chat-row');
@@ -470,6 +473,7 @@
             setTimeout(() => { if(autoPlayActive) playConversationIndex(index + 1); }, 3000);
         }
     }
+    
     function stopConversationPlayback() {
         autoPlayActive = false;
         document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; a.onended = null; });
@@ -545,7 +549,11 @@
                 </div>`;
             });
             html += `</div>`;
-            setTimeout(() => { startConversationPlayback(); }, 100);
+            
+            // DELAYED AUTO PLAY
+            audioCallback = () => {
+                setTimeout(() => { startConversationPlayback(); }, 500);
+            };
         }
         // 3. PRACTICE
         else if (state.phase === 'practice') {
@@ -587,7 +595,7 @@
                         </div>
                     </div>`;
             }
-            // RECALL ('r') - SHOW EVERYTHING. (Modified request)
+            // RECALL ('r') - SHOW EVERYTHING.
             else if (type === 'r') {
                 audioCallback = () => { playCurrentSlideAudio(); };
                 // revealed by default
@@ -637,11 +645,14 @@
         }
 
         container.innerHTML = html;
+        
+        // Trigger TTS logic
         if (textToSpeak) { 
             narratorEl.innerText = textToSpeak; 
             speak(textToSpeak, audioCallback); 
         } else { 
             narratorEl.innerText = ""; 
+            // If text is silent, trigger the callback immediately
             if(audioCallback) audioCallback();
         }
     }

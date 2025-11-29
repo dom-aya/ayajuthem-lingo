@@ -8,108 +8,118 @@
     <style>
         /* GLOBAL FONTS & COLORS */
         :root {
-            --primary: #2c3e50; 
-            --accent: #27ae60;  
+            --primary: #2c3e50; /* Dark Slate */
+            --accent: #27ae60;  /* Green */
             --light: #ecf0f1;
             --speaker-a: #e8f6f3;
             --speaker-b: #fef9e7;
-            --step-active: #3498db; 
+            --step-active: #3498db; /* Blue */
             --blur-bg: #dfe6e9;
+            --highlight: #f1c40f; 
         }
 
+        /* Enforce Segoe UI Everywhere */
         body, button, select, input, h1, h2, h3, h4, div, span, p, li, a {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
         }
 
         body { margin: 0; padding: 0; background: #f4f7f6; color: #333; }
         
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; background: white; border-left: 2px solid black; border-right: 2px solid black; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; }
         
         header { 
-            background: #000080; color: white; padding: 15px; text-align: center; border: 2px solid black; margin-bottom: 20px; 
+            background: var(--primary); color: white; padding: 1rem; text-align: center; border-radius: 0 0 16px 16px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
             display: flex; justify-content: space-between; align-items: center;
         }
-        header h2 { margin: 0; font-family: "Courier New", Courier, monospace; flex-grow: 1; text-align: center;}
-        
-        /* EXIT BUTTON IN HEADER */
+        header h2 { margin: 0; font-weight: 700; letter-spacing: 1px; flex-grow: 1; text-align: center; }
+
+        /* EXIT BUTTON */
         .exit-btn {
-            background: #cc0000; color: white; border: 2px outset #ff4d4d; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 0.8rem; display: none;
+            background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 20px;
+            cursor: pointer; font-weight: bold; font-size: 0.8rem; display: none; transition: background 0.2s;
         }
-        .exit-btn:active { border-style: inset; }
+        .exit-btn:hover { background: #c0392b; }
 
         /* PROGRESS BAR */
-        .progress-container { width: 100%; background-color: white; border: 1px solid black; height: 15px; margin-bottom: 20px; display:none; }
-        .progress-bar { height: 100%; background-color: #00FF00; width: 0%; }
+        .progress-container { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; margin-bottom: 20px; overflow: hidden; display:none; }
+        .progress-bar { height: 100%; background-color: var(--accent); width: 0%; transition: width 0.3s ease; border-radius: 10px; }
 
         /* MENU GRID */
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; width: 100%; margin-bottom: 20px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; width: 100%; margin-bottom: 20px; }
         .lesson-card {
-            background: #FFFFE0; padding: 15px; border: 1px solid black; cursor: pointer; text-align: center; 
-            display: flex; align-items: center; justify-content: center; min-height: 80px;
+            background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 0 #e5e5e5; border: 2px solid #e5e5e5;
+            cursor: pointer; transition: transform 0.1s; text-align: center; position: relative;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 120px;
         }
-        .lesson-card:hover { background-color: #FFFF00; }
-        .lesson-card h3 { margin: 0; font-size: 1.1rem; text-decoration: underline; color: blue; }
-        .lesson-card.review-card { background: #E0FFFF; }
-        .lesson-card.review-card h3 { color: darkblue; }
+        .lesson-card:active { transform: translateY(4px); box-shadow: 0 0 0 #e5e5e5; }
+        .lesson-card:hover { border-color: var(--step-active); }
+        .lesson-card h3 { margin: 0; font-size: 1.2rem; color: var(--primary); font-weight: 600; }
+        .lesson-card.review-card { border-color: var(--step-active); background: #eef9fe; box-shadow: 0 4px 0 #aecde0; }
+        .lesson-card.review-card h3 { color: var(--step-active); }
 
         /* NARRATOR */
         #narrator-box { 
-            background: #FFFFCC; color: black; padding: 10px; border: 2px dashed black; margin-bottom: 20px; 
-            display: none; align-items: center; gap: 10px; cursor: pointer;
+            background: #34495e; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; 
+            font-size: 0.95rem; display: none; align-items: center; gap: 15px; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
         }
-        .tts-label { font-weight: bold; text-decoration: underline; font-size: 0.8rem; }
-        .skip-hint { font-size: 0.7rem; color: #666; margin-left: auto; }
+        #narrator-box:active { background: #2c3e50; transform: translateY(1px); }
+        .tts-label { font-weight: bold; text-transform: uppercase; font-size: 0.7rem; color: #bdc3c7; margin-right: 10px; }
+        .skip-hint { font-size: 0.7rem; color: #7f8c8d; margin-left: auto; opacity: 0.6; }
 
-        /* CONTENT AREA */
-        #app-content { background: white; padding: 15px; border: 1px solid black; display: flex; flex-direction: column; }
+        /* MAIN CONTENT */
+        #app-content { background: white; padding: 30px; border-radius: 16px; border: 2px solid #e5e5e5; box-shadow: 0 4px 0 #e5e5e5; flex-grow: 1; display: flex; flex-direction: column; position: relative; }
 
-        /* CHAT */
+        /* CHAT VIEW */
         .chat-container { flex-grow: 1; margin-bottom: 20px; }
-        .chat-row { margin-bottom: 10px; padding: 10px; border: 1px solid #999; background: #f9f9f9; }
-        .speaker-A { border-left: 5px solid green; }
-        .speaker-B { border-left: 5px solid orange; }
-        .chat-row.active-playing { background-color: #ffff99; border: 2px solid black; }
-        .speaker-label { font-weight: bold; font-size: 0.8em; color: #333; display: block; margin-bottom: 5px; }
+        .chat-row { margin-bottom: 15px; padding: 15px; border-radius: 12px; width: 90%; border: 2px solid #eee; transition: all 0.3s; }
+        .speaker-A { background: var(--speaker-a); margin-right: auto; border-left: 5px solid #1abc9c; }
+        .speaker-B { background: var(--speaker-b); margin-left: auto; border-right: 5px solid #f1c40f; }
+        .chat-row.active-playing { border-color: var(--step-active); box-shadow: 0 0 10px rgba(52, 152, 219, 0.2); transform: scale(1.02); }
+        .speaker-label { font-size: 0.7em; font-weight: 700; color: #95a5a6; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* CARDS */
-        .card-view { text-align: center; width: 100%; margin: 20px 0; }
-        .hidden-content-box { border: 2px dotted #999; padding: 20px; cursor: pointer; background: #f0f0f0; margin-top: 10px; }
-        .hidden-content-box.obscured { color: transparent; }
-        .hidden-content-box.obscured .native-text, .hidden-content-box.obscured .translation { visibility: hidden; }
-        .hidden-content-box.revealed { background: white; border: 2px solid black; color: black; }
-        .hidden-content-box.revealed .native-text, .hidden-content-box.revealed .translation { visibility: visible; }
+        /* CARD VIEW */
+        .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
+        .narrator-slide { background: #fff; border-left: 6px solid var(--step-active); padding: 30px; border-radius: 12px; font-size: 1.3rem; line-height: 1.6; color: var(--primary); max-width: 600px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 
-        .native-text { font-size: 1.5rem; color: black; margin: 10px 0; font-weight: bold; }
-        .translation { font-size: 1.1rem; color: #444; font-style: italic; }
-        .prompt-text { font-size: 1.1rem; margin-bottom: 15px; font-weight: bold; }
-        .reveal-hint { font-size: 0.8rem; color: red; margin-bottom: 5px; visibility: hidden; }
-        .reveal-hint.visible { visibility: visible; }
+        .hidden-content-box { background: transparent; border-radius: 12px; padding: 20px; transition: all 0.3s ease; cursor: pointer; width: 100%; }
+        .hidden-content-box.obscured { background: var(--blur-bg); user-select: none; }
+        .hidden-content-box.obscured .native-text, .hidden-content-box.obscured .translation, .hidden-content-box.obscured .media-container { visibility: hidden; opacity: 0; }
+        .hidden-content-box.revealed .native-text, .hidden-content-box.revealed .translation, .hidden-content-box.revealed .media-container { visibility: visible; opacity: 1; }
 
-        .media-container { width: 100%; margin-bottom: 10px; }
+        .native-text { font-size: 2rem; color: var(--primary); margin: 10px 0; font-weight: 700; }
+        .translation { font-size: 1.3rem; color: #7f8c8d; font-style: italic; }
+        .prompt-text { font-size: 1.1rem; margin-bottom: 20px; font-weight: bold; }
+        .reveal-hint { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #95a5a6; margin-bottom: 8px; opacity: 0; transition: opacity 0.3s; }
+        .reveal-hint.visible { opacity: 1; }
+
+        .card-image { max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 15px; object-fit: cover; }
+        .media-container { width: 100%; margin-bottom: 10px; max-width: 500px; }
         
-        /* BUTTONS */
-        .main-action-container { margin-top: 20px; padding-top: 10px; border-top: 1px solid #ccc; text-align: center; }
-        button.big-btn, button.stop-btn, button.secondary {
-            background-color: #f0f0f0; border: 2px outset buttonface; padding: 5px 15px; font-size: 1rem;
-            cursor: pointer; margin: 5px; color: black; font-family: Arial, sans-serif;
-        }
-        button:active { border-style: inset; }
-        .big-btn { font-weight: bold; min-width: 100px; }
-        .stop-btn { color: red; font-size: 0.8rem; }
+        /* ACTION BUTTONS */
+        .main-action-container { margin-top: auto; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; display: flex; justify-content: center; gap: 10px; }
+        .big-btn { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-size: 1rem; font-weight: 700; text-transform: uppercase; box-shadow: 0 4px 0 #1a252f; transition: transform 0.1s; min-width: 120px; }
+        .big-btn:active { transform: translateY(4px); box-shadow: none; }
+        .big-btn:hover { filter: brightness(1.1); }
+        
+        .big-btn.secondary { background: white; color: #7f8c8d; border: 2px solid #e5e5e5; box-shadow: 0 4px 0 #e5e5e5; }
+        .big-btn.secondary:active { box-shadow: none; }
+        
+        .stop-btn { background: #e74c3c; box-shadow: 0 4px 0 #c0392b; width: 100%; margin-top: 10px;}
+        .stop-btn:active { box-shadow: none; transform: translateY(4px); }
+
     </style>
 </head>
 <body>
 
 <header>
-    <div style="width:60px;"></div> 
-    <h2>Ayalingo</h2>
+    <div style="width:60px;"></div> <h2>Ayalingo</h2>
     <button id="exit-btn" class="exit-btn" onclick="exitLesson()">EXIT</button>
 </header>
 
 <div class="container">
     
     <div id="menu-view">
-        <h3>Choose a Lesson:</h3>
         <div id="menu-grid" class="menu-grid"></div>
     </div>
 
@@ -130,7 +140,8 @@
     // --- CONFIGURATION ---
     const lessonManifest = [
         "01_Greetings.csv",
-        "02_Story.csv"
+        "02_Story.csv",
+        "03_Herring_Raking.csv"
     ];
 
     // --- STATE ---
@@ -179,7 +190,7 @@
         document.getElementById('progress-container').style.display = viewName === 'app' ? 'block' : 'none';
         document.getElementById('narrator-box').style.display = 'none'; 
         
-        // Show/Hide Exit Button in Header
+        // Show/Hide Exit Button
         document.getElementById('exit-btn').style.display = viewName === 'app' ? 'block' : 'none';
     }
 
@@ -293,7 +304,7 @@
                 updateProgressBar();
                 render();
             } else {
-                // Go back to conversation if it exists
+                // Back button from Practice goes to Conversation
                 if(state.conversationData.length > 0) transitionToPhase('conversation');
                 else transitionToPhase('goals');
             }
@@ -399,18 +410,16 @@
         let html = "";
         let audioCallback = null; 
 
-        // Narrator Box Display: Only show if there is text AND we are not in review mode
-        // But for Practice slides, we generally hide it unless it's a Note.
-        narratorBox.style.display = 'none'; // Default hidden
+        // Narrator Box Display: Only show if needed (Goals or Notes)
+        narratorBox.style.display = 'none'; 
 
         // 1. GOALS
         if (state.phase === 'goals') {
-            textToSpeak = state.filename === 'review' ? "" : state.goalsText; // Read goals!
-            // Format for display
+            textToSpeak = state.filename === 'review' ? "" : state.goalsText; // Read goals text!
             const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
             html = `
                 <h2>Topic: ${state.title}</h2>
-                <div style="font-size:1rem; line-height:1.5; margin-bottom:20px; text-align:left; border: 1px solid #ccc; padding:10px; background:#f9f9f9;">${formattedGoals}</div>
+                <div style="font-size:1rem; line-height:1.5; margin-bottom:20px; text-align:left; border: 1px solid #eee; padding:15px; background:#fafafa; border-radius:8px;">${formattedGoals}</div>
                 <div class="main-action-container"><button class="big-btn" onclick="handleNextAction()">Start Lesson</button></div>`;
             
             if(textToSpeak) narratorBox.style.display = 'flex';
@@ -435,7 +444,7 @@
             html += `</div><div class="main-action-container">
                 <button class="big-btn" onclick="handleNextAction()">Next: Practice</button><br>
                 <button class="stop-btn" onclick="stopConversationPlayback()">[Stop Audio]</button>
-                <button class="secondary" onclick="handlePrevAction()">< Back</button>
+                <button class="big-btn secondary" onclick="handlePrevAction()">< Back</button>
             </div>`;
             setTimeout(() => { startConversationPlayback(); }, 100);
         }
@@ -446,31 +455,29 @@
 
             if (state.filename !== 'review') {
                 if (type === 'n') {
-                    // It is a note, so speak the content
-                    textToSpeak = row.narrator_text;
+                    textToSpeak = row.narrator_text; // Speak note
                 } else if (state.slideIndex === 0) {
-                    // Transition to practice: speak once
-                    textToSpeak = "Now, let's practice.";
+                    textToSpeak = "Now, let's practice."; // Transition only
                 }
-                // Otherwise remain silent for cards
+            } else {
+                textToSpeak = ""; 
             }
 
             if (type === 'n') {
-                // If it's a note, we usually show the text in the card, so maybe we don't need the top box?
-                // But the user said "narrator box needs to be hidden, but TTS should still read".
-                // So we keep narratorBox display:none, but we invoke speak().
-                html = `<div class="card-view"><div style="background:#ffffe0; border:1px solid black; padding:15px; font-size:1.2rem;">${row.narrator_text}</div></div><div class="main-action-container"><button class="big-btn" onclick="handleNextAction()">Next ></button></div>`;
+                narratorBox.style.display = 'none';
+                html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div><div class="main-action-container"><button class="big-btn" onclick="handleNextAction()">Next ></button></div>`;
             }
             else if (type === 'p' || type === 'r') {
-                // For practice/recall, we might want audio callback if there was TTS
                 audioCallback = () => { playCurrentSlideAudio(); };
                 const isRecall = (type === 'r');
                 let contentClass = isRecall ? "hidden-content-box obscured" : "hidden-content-box";
                 let hintClass = isRecall ? "reveal-hint visible" : "reveal-hint";
                 let onClickAttr = isRecall ? `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"` : "";
-                
+                const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
+
                 html = `
                     <div class="card-view">
+                        ${imgHtml}
                         ${renderMedia(row.audio_url)}
                         <div class="${hintClass}">[Click to Reveal]</div>
                         <div class="${contentClass}" ${onClickAttr}>
@@ -486,8 +493,11 @@
             else if (type === 't') {
                 let contentClass = "hidden-content-box obscured";
                 let onClickAttr = `onclick="revealAndPlay(this)"`;
+                const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
+
                 html = `
                     <div class="card-view">
+                        ${imgHtml}
                         <div class="prompt-text">How would you say: <br>"${row.english}"?</div>
                         <div class="reveal-hint visible">[Click to Reveal & Play]</div>
                         <div class="${contentClass}" ${onClickAttr}>
@@ -501,7 +511,7 @@
                     </div>`;
             }
             
-            if(textToSpeak && state.slideIndex === 0) narratorBox.style.display = 'flex'; // Show only on transition
+            if(textToSpeak && state.slideIndex === 0) narratorBox.style.display = 'flex';
         }
         // 4. FINISH
         else if (state.phase === 'finish') {
@@ -517,7 +527,6 @@
             speak(textToSpeak, audioCallback); 
         } else { 
             narratorEl.innerText = ""; 
-            // If silent, trigger audio immediately (important for 'p' slides if they are first)
             if(audioCallback) audioCallback();
         }
     }

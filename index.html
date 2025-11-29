@@ -42,13 +42,13 @@
             border-right: 1px solid #e0e0e0;
         }
         
-        /* HEADER (Grid for perfect centering) */
+        /* HEADER */
         header { 
             background: var(--primary); color: white; padding: 1rem; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 10;
             flex-shrink: 0;
             display: grid;
-            grid-template-columns: 1fr auto 1fr; /* Left Space, Title, Right Button */
+            grid-template-columns: 1fr auto 1fr; /* Center Title */
             align-items: center;
         }
         header h2 { margin: 0; font-weight: 700; letter-spacing: 1px; text-align: center; grid-column: 2; }
@@ -137,8 +137,6 @@
         .reveal-hint.visible { opacity: 1; }
 
         .card-image { max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 15px; object-fit: cover; }
-        
-        /* MEDIA */
         .media-container { width: 100%; margin-bottom: 10px; max-width: 500px; display: flex; justify-content: center; }
         
         /* ACTION BUTTONS */
@@ -151,7 +149,7 @@
         .big-btn:active { transform: translateY(4px); box-shadow: none; }
         .big-btn:hover { filter: brightness(1.1); }
         
-        .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ccc; }
+        .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
         .big-btn.secondary:active { box-shadow: none; }
         
         .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 20px;}
@@ -452,7 +450,6 @@
         autoPlayActive = true;
         setTimeout(() => { playConversationIndex(0); }, 500);
     }
-    
     function playConversationIndex(index) {
         if (!autoPlayActive) return;
         const rows = document.querySelectorAll('.chat-row');
@@ -473,7 +470,6 @@
             setTimeout(() => { if(autoPlayActive) playConversationIndex(index + 1); }, 3000);
         }
     }
-    
     function stopConversationPlayback() {
         autoPlayActive = false;
         document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; a.onended = null; });
@@ -567,7 +563,6 @@
                 textToSpeak = ""; 
             }
 
-            // NOTE
             if (type === 'n') {
                 narratorBox.style.display = 'none';
                 html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div>`;
@@ -592,19 +587,19 @@
                         </div>
                     </div>`;
             }
-            // RECALL ('r') - Hide everything but Audio
+            // RECALL ('r') - SHOW EVERYTHING. (Modified request)
             else if (type === 'r') {
                 audioCallback = () => { playCurrentSlideAudio(); };
-                let contentClass = "hidden-content-box obscured";
-                let onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
+                // revealed by default
+                let contentClass = "hidden-content-box revealed";
+                let onClickAttr = ""; // No click needed
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
                 html = `
                     <div class="card-view">
                         ${imgHtml}
                         ${renderMedia(row.audio_url)}
-                        <div class="reveal-hint visible">[Tap to Reveal]</div>
-                        <div class="${contentClass}" ${onClickAttr}>
+                        <div class="${contentClass}" ${onClickAttr} style="cursor:default">
                             <div class="native-text">${row.ayajuthem}</div>
                             <div class="translation">${row.english}</div>
                         </div>

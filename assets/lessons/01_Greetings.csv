@@ -1,12 +1,41 @@
-﻿type,audio_url,image_url,english,ayajuthem,speaker,narrator_text
-c,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,,Hello friend,aǰɛcxʷot,Speaker A,Listen to the greeting.
-c,https://fv-media-uploads.s3.amazonaws.com/homalco/51a83aa2-51ed-4f8e-84fd-abf8d5a3102a/thank%20you%20mp3.mp3,,How are you?,ʔimot,Speaker B,
-p,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,,I am good,ʔimot,Speaker B,Now practice this key phrase.
-r,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,,I am good,ʔimot,Speaker B,What about this one?
-p,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,,I am good,ʔimot,Speaker B,This one will stump you.
-t,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,,I am good,ʔimot,Speaker B,Nice try.
-r,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,,I am good,ʔimot,Speaker B,Ok you're good
-r,https://fv-media-uploads.s3.amazonaws.com/homalco/d13de480-f3e4-4054-868f-9bbd1c78e8a5/how-are-you%3F.mp3,,I am good,ʔimot,Speaker B,Wow.
-
-
-
+﻿type,audio_url,english,ayajuthem,speaker,narrator_text
+c,assets/audio/ch2/01-mab_are_you_well.mp3,are you well,ʔaǰɛcxʷot,Mabel,
+c,assets/audio/ch2/02-l_I'm_fine.mp3,I'm fine,ʔi čɛnʔot,Lawrence,
+c,assets/audio/ch2/03-l_how_about_you.mp3,how about you,čɩm ga nɩgɩ,Lawrence,
+c,assets/audio/ch2/04-mab_very_good.mp3,very good,ʔimot,Mabel,
+p,assets/audio/ch2/05-mab_I'm_fine.mp3,I'm fine,ʔi čɛnʔot,Mabel,
+p,assets/audio/ch2/06-mab_are_you_well.mp3,are you well,ʔaǰɛcxʷot,Mabel,
+r,assets/audio/ch2/07-mab_good.mp3,good,ʔi,Mabel,
+t,assets/audio/ch2/08-l_good.mp3,good,ʔi,Lawrence,
+r,assets/audio/ch2/09-mab_very_good.mp3,very good,ʔimot,Mabel,
+r,assets/audio/ch2/10-mab_you.mp3,you,nɩgɩ,Mabel,
+p,assets/audio/ch2/11-l_you.mp3,you,nɩgɩ,Lawrence,
+r,assets/audio/ch2/12-mab_me.mp3,me,činɛ,Mabel,
+t,assets/audio/ch2/13-l_me.mp3,me,čɩnɛ,Lawrence,
+r,assets/audio/ch2/14-l_I'm bad.mp3,I'm sick,hɛhɛwč ɬaχayɩt,Lawrence,
+r,assets/audio/ch2/15-l_really_hot.mp3,really hot,hɛhɛw kʷəs,Lawrence,
+t,assets/audio/ch2/16-mab_I'm_bad.mp3,I'm sick,hɛhɛwč ɬaχayɩt,Mabel,
+r,assets/audio/ch2/17-mab_hot.mp3,hot,kʷas,Mabel,
+r,assets/audio/ch2/18-mab_bad.mp3,bad,ɬaχ,Mabel,
+t,assets/audio/ch2/19-mab_sick.mp3,sick,laχayɩt,Mabel,
+p,assets/audio/ch2/20-mab_hot.mp3,hot,kʷas,Mabel,
+r,assets/audio/ch2/21-l_sleepy.mp3,sleepy,ƛɩčtəm,Lawrence,
+t,assets/audio/ch2/22-mab_why.mp3,why,čɩm ga,Mabel,
+t,assets/audio/ch2/23-l_it was a bad sleep.mp3,it was a bad sleep,ɬaχmot ƛɩčt,Lawrence,
+p,assets/audio/ch2/24-mab_sleepy.mp3,sleepy,ƛɩčtəm,Mabel,
+r,assets/audio/ch2/25-mab_It was a bad sleep last night.mp3,It was a bad sleep last night,ɬaχmot ƛɩčt snanatoɬ,Mabel,
+r,assets/audio/ch2/26-mab_sleep.mp3,sleep,ƛičt,Mabel,
+t,assets/audio/ch2/27-mab_sleepy.mp3,sleepy,ƛɩčtəm,Mabel,
+p,assets/audio/ch2/28-mab_bad_sleep.mp3,bad sleep,ɬaχmot ƛičt,Mabel,
+t,assets/audio/ch2/29-last_night.mp3,night,snanatoɬ,Lawrenceast,
+r,assets/audio/ch2/30-mab_are you all well.mp3,are you all well,ʔaǰɛčɛpʔot,Mabel,
+r,assets/audio/ch2/31-l_we're okay.mp3,we're okay,ʔičɛtʔot,Lawrence,
+r,assets/audio/ch2/32-mab_are you all alright.mp3,are you all alright,ʔukʷa čɛpot ʔi,Mabel,
+r,assets/audio/ch2/33-l_we're all okay.mp3,we're all okay,ʔukʷštəm ʔi nɛmoɬ,Lawrence,
+p,assets/audio/ch2/34-mab_we're okay.mp3,we're okay,ʔukʷštəm ʔi,Mabel,
+t,assets/audio/ch2/35-mab_we're all okay.mp3,we're all okay,ʔukʷštəm ʔi,Mabel,
+r,assets/audio/ch2/36-mab_we.mp3,we,čɛp,Mabel,
+r,assets/audio/ch2/37-mab_all.mp3,all,ʔukʷ,Mabel,
+p,assets/audio/ch2/38-mab_us.mp3,us,nɛmoɬ,Mabel,
+r,assets/audio/ch2/39-mab_It's a really sunny day today.mp3,It's a really sunny day today,hɛhɛw ʔimot stokʷ tɛtɛχəm,Mabel,
+r,assets/audio/ch2/40-mab_feelings.mp3,feelings,qʷayɩgən,Mabel,

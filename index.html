@@ -111,10 +111,19 @@
         /* CHAT VIEW */
         .chat-container { width: 100%; }
         .chat-row { margin-bottom: 15px; padding: 15px; border-radius: 12px; width: 85%; border: 1px solid #f0f0f0; transition: all 0.3s; }
-        .speaker-A { background: var(--speaker-a); margin-right: auto; border-left: 4px solid #1abc9c; }
-        .speaker-B { background: var(--speaker-b); margin-left: auto; border-right: 4px solid #f1c40f; }
         .chat-row.active-playing { border-color: var(--step-active); box-shadow: 0 4px 10px rgba(0,0,0,0.1); transform: scale(1.02); }
         .speaker-label { font-size: 0.7em; font-weight: 700; color: #95a5a6; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Dynamic Speaker Styles */
+        .chat-row.left-aligned { margin-right: auto; border-left-width: 5px; border-left-style: solid; border-right: none; }
+        .chat-row.right-aligned { margin-left: auto; border-right-width: 5px; border-right-style: solid; border-left: none; }
+
+        .sp-style-0 { background: #e8f8f5; border-color: #1abc9c; } /* Teal */
+        .sp-style-1 { background: #fef9e7; border-color: #f1c40f; } /* Yellow */
+        .sp-style-2 { background: #f4ecf7; border-color: #9b59b6; } /* Purple */
+        .sp-style-3 { background: #ebf5fb; border-color: #3498db; } /* Blue */
+        .sp-style-4 { background: #fdedec; border-color: #e74c3c; } /* Red */
+        .sp-style-5 { background: #eaeded; border-color: #95a5a6; } /* Grey */
 
         /* CARD VIEW */
         .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
@@ -301,6 +310,8 @@
                 download: true, header: true, skipEmptyLines: true,
                 complete: (results) => {
                     const raw = results.data;
+                    // Filter logic skips rows that are not explicitly 'c' or one of the practice types.
+                    // This handles skipping 'null' types or empty rows.
                     state.conversationData = raw.filter(r => r.type && r.type.toLowerCase().trim() === 'c');
                     state.sequenceData = raw.filter(r => ['p', 'n', 'r', 't'].includes(r.type ? r.type.toLowerCase().trim() : ''));
                     switchView('app');
@@ -505,6 +516,12 @@
         if(audio) { audio.currentTime = 0; audio.play().catch(e=>console.log(e)); }
     }
 
+    function revealAndSpeak(element, text) {
+        element.classList.remove('obscured'); 
+        element.classList.add('revealed');
+        if(text) speak(text);
+    }
+
     // --- MAIN RENDER ---
     function render() {
         const container = document.getElementById('app-content');
@@ -538,10 +555,27 @@
 
             if(textToSpeak) narratorBox.style.display = 'flex';
 
+            // DYNAMIC SPEAKER ASSIGNMENT LOGIC
+            const uniqueSpeakers = [];
+            state.conversationData.forEach(row => {
+                if (row.speaker && !uniqueSpeakers.includes(row.speaker)) {
+                    uniqueSpeakers.push(row.speaker);
+                }
+            });
+
             html = `<div class="chat-container">`;
             state.conversationData.forEach((row, i) => {
-                const spClass = row.speaker.includes('A') ? 'speaker-A' : 'speaker-B';
-                html += `<div class="chat-row ${spClass}" id="row-${i}">
+                // Find index
+                let spIndex = uniqueSpeakers.indexOf(row.speaker);
+                if (spIndex === -1) spIndex = 0; // Fallback
+                
+                // Determine alignment (Left for even index, Right for odd)
+                const alignClass = (spIndex % 2 === 0) ? 'left-aligned' : 'right-aligned';
+                
+                // Determine color style (Cycle through 6)
+                const styleClass = `sp-style-${spIndex % 6}`;
+                
+                html += `<div class="chat-row ${alignClass} ${styleClass}" id="row-${i}">
                     <span class="speaker-label">${row.speaker}</span>
                     <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
                     <div style="font-size:0.9rem; color:#666; margin-bottom: 10px;">${row.english}</div>
@@ -591,25 +625,29 @@
                         
                         <div class="reveal-hint visible">[Tap for Translation]</div>
                         <div class="${contentClass}" ${onClickAttr}>
-                            <div class="translation" style="font-size:1.5rem; font-style:normal; color:var(--primary); font-weight:600;">${row.english}</div>
+                            <div class="translation" style="font-size:1.5rem; color:var(--primary); font-weight:600;">${row.english}</div>
                         </div>
                     </div>`;
             }
-            // RECALL ('r') - SHOW EVERYTHING.
+            // RECALL ('r') - Show Native + Audio. Reveal English + TTS.
             else if (type === 'r') {
                 audioCallback = () => { playCurrentSlideAudio(); };
-                // revealed by default
-                let contentClass = "hidden-content-box revealed";
-                let onClickAttr = ""; // No click needed
+                
+                let contentClass = "hidden-content-box obscured";
+                const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                let onClickAttr = `onclick="revealAndSpeak(this, '${safeEnglish}')"`;
+                
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
                 html = `
                     <div class="card-view">
                         ${imgHtml}
                         ${renderMedia(row.audio_url)}
-                        <div class="${contentClass}" ${onClickAttr} style="cursor:default">
-                            <div class="native-text">${row.ayajuthem}</div>
-                            <div class="translation">${row.english}</div>
+                        <div class="native-text" style="margin-bottom:20px;">${row.ayajuthem}</div>
+                        
+                        <div class="reveal-hint visible">[Tap to Reveal & Speak]</div>
+                        <div class="${contentClass}" ${onClickAttr}>
+                            <div class="translation" style="font-size:1.5rem; color:var(--primary); font-weight:600;">${row.english}</div>
                         </div>
                     </div>`;
             }

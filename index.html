@@ -516,30 +516,24 @@
         if(audio) { audio.currentTime = 0; audio.play().catch(e=>console.log(e)); }
     }
 
-    function revealAndPlaySequence(element, textToSpeak) {
-        // 1. Reveal content
-        element.classList.remove('obscured');
+    function revealAndSpeak(element, text) {
+        element.classList.remove('obscured'); 
         element.classList.add('revealed');
-
-        // 2. Find audio in the parent container
-        const cardView = element.closest('.card-view');
-        const audio = cardView.querySelector('audio');
-
+        if(text) speak(text);
+    }
+    
+    function playAudioThenTTS(text) {
+        const audio = document.querySelector('.card-view .slide-audio');
         cancelTTS();
-
-        if (audio) {
-            // Play Audio
+        if(audio) {
             audio.currentTime = 0;
-            audio.play().catch(e => console.error("Audio play error", e));
-            
-            // 3. When Audio ends -> TTS
-            // Using { once: true } ensures this specific listener runs only once per click
+            audio.play().catch(e=>console.log(e));
+            // Play TTS once audio ends
             audio.addEventListener('ended', () => {
-                if(textToSpeak) speak(textToSpeak);
+                speak(text);
             }, { once: true });
         } else {
-            // Fallback if no audio exists
-            if (textToSpeak) speak(textToSpeak);
+            speak(text);
         }
     }
 
@@ -628,8 +622,8 @@
 
             // === TYPE DEFINITIONS for Lesson Planners ===
             // 'n' = Narrator Slide: Shows a text box with information.
-            // 'p' = Practice: Shows Audio + Native text. English hidden until revealed. On reveal -> Play Audio then TTS English.
-            // 'r' = Recall: Shows Native text + Audio. English hidden until revealed. On reveal -> Play Audio then TTS English.
+            // 'p' = Practice: VISIBLE Native + English. Auto-plays Native Audio -> TTS English.
+            // 'r' = Recall: HIDDEN English. Auto-plays Native Audio. Click Reveal -> TTS English.
             // 't' = Test: Shows English prompt. Native text + Audio hidden until revealed.
             // ============================================
 
@@ -637,14 +631,17 @@
                 narratorBox.style.display = 'none';
                 html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div>`;
             }
-            // PRACTICE ('p') - Show Audio + Native. Hide English.
+            // PRACTICE ('p') - Fully Revealed. Auto Play Sequence.
             else if (type === 'p') {
-                audioCallback = () => { playCurrentSlideAudio(); };
-                
-                let contentClass = "hidden-content-box obscured";
                 const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                // Updated to use revealAndPlaySequence
-                let onClickAttr = `onclick="revealAndPlaySequence(this, '${safeEnglish}')"`;
+                
+                // Auto Play: Audio -> TTS
+                audioCallback = () => { playAudioThenTTS(safeEnglish); };
+                
+                // Content is revealed by default
+                let contentClass = "hidden-content-box revealed";
+                // Click plays TTS only (or audio then tts? usually simple tts is fine for replay)
+                let onClickAttr = `onclick="speak('${safeEnglish}')"`;
                 
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
@@ -654,20 +651,22 @@
                         ${renderMedia(row.audio_url)}
                         <div class="native-text" style="margin-bottom:20px;">${row.ayajuthem}</div>
                         
-                        <div class="reveal-hint visible">[Tap for Translation]</div>
+                        <!-- No reveal hint needed -->
                         <div class="${contentClass}" ${onClickAttr}>
                             <div class="translation" style="font-size:1.5rem; color:var(--primary); font-weight:600;">${row.english}</div>
                         </div>
                     </div>`;
             }
-            // RECALL ('r') - Show Native + Audio. Reveal English + TTS.
+            // RECALL ('r') - English Hidden. Auto Play Audio. Reveal -> TTS.
             else if (type === 'r') {
+                const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                
+                // Auto Play: Audio only
                 audioCallback = () => { playCurrentSlideAudio(); };
                 
                 let contentClass = "hidden-content-box obscured";
-                const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                // Updated to use revealAndPlaySequence
-                let onClickAttr = `onclick="revealAndPlaySequence(this, '${safeEnglish}')"`;
+                // Click Reveal -> TTS Only
+                let onClickAttr = `onclick="revealAndSpeak(this, '${safeEnglish}')"`;
                 
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 

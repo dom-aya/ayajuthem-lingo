@@ -37,7 +37,6 @@
             flex-direction: column; 
             border-left: 1px solid #e0e0e0;
             border-right: 1px solid #e0e0e0;
-            position: relative;
         }
         
         /* HEADER */
@@ -66,13 +65,16 @@
         #scroll-viewport {
             flex-grow: 1;
             overflow-y: auto;
-            overflow-x: hidden; /* Prevent horizontal scroll during anims */
             padding: 20px;
             display: flex;
             flex-direction: column;
             scroll-behavior: smooth;
-            position: relative;
+            position: relative; /* For transitions */
         }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
 
         /* ACTION BAR (Fixed Bottom) */
         #action-bar {
@@ -84,7 +86,6 @@
             justify-content: space-between; 
             align-items: center;
             min-height: 70px;
-            z-index: 20;
         }
 
         /* MENU GRID */
@@ -130,20 +131,8 @@
         .sp-style-5 { background: #eaeded; border-color: #95a5a6; } /* Grey */
 
         /* CARD VIEW */
-        .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; flex-grow: 1; min-height: 300px; }
+        .card-view { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; flex-grow: 1; }
         
-        /* ANIMATIONS */
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(50px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .animate-slide { animation: slideInRight 0.3s ease-out; }
-        .animate-fade { animation: fadeIn 0.4s ease-out; }
-
         .narrator-slide { background: white; border-left: 5px solid var(--step-active); padding: 25px; border-radius: 8px; font-size: 1.2rem; line-height: 1.5; color: var(--primary); max-width: 600px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
         .hidden-content-box { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; transition: all 0.3s ease; cursor: pointer; width: 100%; margin-top: 10px;}
@@ -151,7 +140,7 @@
         .hidden-content-box.obscured .native-text, .hidden-content-box.obscured .translation, .hidden-content-box.obscured .media-container { visibility: hidden; opacity: 0; }
         .hidden-content-box.revealed .native-text, .hidden-content-box.revealed .translation, .hidden-content-box.revealed .media-container { visibility: visible; opacity: 1; }
 
-        .native-text { font-size: 1.8rem; color: var(--primary); margin: 15px 0; font-weight: 600; line-height: 1.3; }
+        .native-text { font-size: 1.8rem; color: var(--primary); margin: 15px 0; font-weight: 600; }
         .translation { font-size: 1.1rem; color: #7f8c8d; font-style: italic; }
         .prompt-text { font-size: 1.2rem; margin-bottom: 20px; font-weight: 600; color: #333; }
         .reveal-hint { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #95a5a6; margin-bottom: 5px; opacity: 0; transition: opacity 0.3s; }
@@ -159,6 +148,16 @@
 
         .card-image { max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 15px; object-fit: cover; }
         .media-container { width: 100%; margin-bottom: 10px; max-width: 500px; display: flex; justify-content: center; }
+        
+        /* CUSTOM AUDIO PLAYER */
+        .custom-audio-btn {
+            width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.1s, background 0.2s;
+            font-size: 24px; border: none; margin: 10px auto;
+        }
+        .custom-audio-btn:active { transform: scale(0.95); background: #219150; }
+        .custom-audio-btn svg { fill: white; width: 24px; height: 24px; }
         
         /* ACTION BUTTONS */
         .big-btn { 
@@ -173,14 +172,6 @@
         
         .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 20px;}
         .reset-link:hover { color: #e74c3c; }
-
-        /* SPEED CONTROL */
-        .speed-toggle {
-            position: absolute; top: -45px; right: 20px;
-            background: #ecf0f1; border: 1px solid #bdc3c7; color: #7f8c8d;
-            border-radius: 20px; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; font-weight: bold;
-        }
-        .speed-toggle.active { background: var(--step-active); color: white; border-color: var(--step-active); }
 
         #btn-back, #btn-next { visibility: hidden; }
 
@@ -200,7 +191,7 @@
         <div id="progress-bar" class="progress-bar"></div>
     </div>
 
-    <div id="scroll-viewport">
+    <div id="scroll-viewport" class="swipe-area">
         <div id="narrator-box" onclick="skipTTS()">
             <span class="tts-label">Note</span>
             <span id="narrator-text"></span>
@@ -215,8 +206,7 @@
         </div>
     </div>
 
-    <div id="action-bar" style="display:none; position:relative;">
-        <div id="speed-btn" class="speed-toggle" onclick="toggleSpeed()" style="display:none;">🐢 Slow</div>
+    <div id="action-bar" style="display:none;">
         <button id="btn-back" class="big-btn secondary" onclick="handlePrevAction()">Back</button>
         <button id="btn-next" class="big-btn" onclick="handleNextAction()">Next</button>
     </div>
@@ -224,7 +214,7 @@
 
 <script>
     // --- STATE ---
-    let lessonManifest = []; 
+    let lessonManifest = []; // Will be loaded from JSON
     let state = {
         conversationData: [], 
         sequenceData: [],     
@@ -236,13 +226,37 @@
     };
 
     let autoPlayActive = false; 
-    let slowSpeed = false; // Speed toggle state
     let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
     let pendingAudioCallback = null; 
     
+    // --- TOUCH SUPPORT ---
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.querySelector('.swipe-area').addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+
+    document.querySelector('.swipe-area').addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+
+    function handleSwipe() {
+        const minSwipeDistance = 50; 
+        if (state.phase === 'menu') return; // Don't swipe on menu
+
+        if (touchEndX < touchStartX - minSwipeDistance) {
+            handleNextAction(); // Swipe Left -> Next
+        }
+        if (touchEndX > touchStartX + minSwipeDistance) {
+            handlePrevAction(); // Swipe Right -> Back
+        }
+    }
+
     // --- INIT ---
     window.onload = () => { 
-        // Load Manifest
+        // Load the Manifest file first!
         fetch('manifest.json')
             .then(response => response.json())
             .then(data => {
@@ -253,9 +267,6 @@
                 console.error("Could not load manifest.json", err);
                 document.getElementById('menu-grid').innerHTML = "<p>Error loading lessons.</p>";
             });
-            
-        // Setup Swipe Listeners
-        setupSwipe();
     };
 
     // --- MENU LOGIC ---
@@ -267,7 +278,7 @@
             const isDone = completedLessons.includes(lesson.file);
             
             const card = document.createElement('div');
-            card.className = `lesson-card ${isDone ? 'completed' : ''} animate-fade`; // Added Fade In
+            card.className = `lesson-card ${isDone ? 'completed' : ''} fade-in`;
             card.onclick = () => loadLesson(lesson);
             
             const statusHtml = isDone ? `<div class="status">COMPLETED</div>` : '';
@@ -278,7 +289,7 @@
         // Review Card
         if (completedLessons.length > 0) {
             const reviewCard = document.createElement('div');
-            reviewCard.className = `lesson-card review-card animate-fade`;
+            reviewCard.className = `lesson-card review-card fade-in`;
             reviewCard.onclick = () => startReview();
             reviewCard.innerHTML = `<h3>Review Mode</h3>`;
             grid.appendChild(reviewCard);
@@ -325,55 +336,11 @@
         }
     }
 
-    function toggleSpeed() {
-        slowSpeed = !slowSpeed;
-        const btn = document.getElementById('speed-btn');
-        if (slowSpeed) {
-            btn.classList.add('active');
-            btn.innerText = "🐢 Slow On";
-        } else {
-            btn.classList.remove('active');
-            btn.innerText = "🐢 Slow";
-        }
-    }
-
-    // --- SWIPE LOGIC ---
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    function setupSwipe() {
-        const zone = document.getElementById('scroll-viewport');
-        zone.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
-
-        zone.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, {passive: true});
-    }
-
-    function handleSwipe() {
-        // Minimum swipe distance
-        if (state.phase === null || document.getElementById('menu-view').style.display === 'block') return;
-
-        if (touchEndX < touchStartX - 50) {
-            // Swipe Left -> Next
-            handleNextAction();
-        }
-        if (touchEndX > touchStartX + 50) {
-            // Swipe Right -> Back
-            handlePrevAction();
-        }
-    }
-
-
     // --- DATA LOADING ---
     function loadLesson(lessonObj) {
         state.filename = lessonObj.file;
         state.title = lessonObj.title;
 
-        // Assumes text file is same path but .txt instead of .csv
         const txtFile = lessonObj.file.replace('.csv', '.txt');
         
         fetch(txtFile).then(r => r.ok ? r.text() : "Goals not found.").then(text => {
@@ -441,14 +408,10 @@
     function updateButtons(backVisible, nextLabel) {
         const btnBack = document.getElementById('btn-back');
         const btnNext = document.getElementById('btn-next');
-        const speedBtn = document.getElementById('speed-btn');
         
         btnBack.style.visibility = backVisible ? 'visible' : 'hidden';
         btnNext.innerText = nextLabel;
         btnNext.style.visibility = 'visible'; 
-        
-        // Only show speed toggle in practice/conversation
-        speedBtn.style.display = (state.phase === 'practice' || state.phase === 'conversation') ? 'block' : 'none';
     }
 
     function handleNextAction() {
@@ -511,13 +474,24 @@
     });
 
     // --- HELPERS ---
-    function renderMedia(url) {
+    function renderMedia(url, useCustomPlayer = false) {
         if (!url) return '';
         const ytId = getYoutubeId(url);
         if (ytId) {
             return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
         } else {
-            return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
+            // Use Custom Player for cards, Native for Chat
+            if (useCustomPlayer) {
+                return `
+                <div class="media-container">
+                    <audio class="slide-audio" src="${url}" style="display:none;"></audio>
+                    <button class="custom-audio-btn" onclick="playCurrentSlideAudio()">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                </div>`;
+            } else {
+                return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
+            }
         }
     }
 
@@ -529,9 +503,10 @@
     }
 
     function playCurrentSlideAudio() {
-        const audio = document.querySelector('.card-view .slide-audio');
+        // Find audio, whether it's hidden or not
+        const audio = document.querySelector('.card-view .slide-audio') || document.querySelector('.chat-row.active-playing .slide-audio');
         if (audio) {
-            audio.playbackRate = slowSpeed ? 0.75 : 1.0; 
+            audio.currentTime = 0; 
             audio.play().catch(e => console.log("Audio play blocked", e));
         }
     }
@@ -554,7 +529,6 @@
 
         const audio = currentRow.querySelector('audio');
         if (audio) {
-            audio.playbackRate = slowSpeed ? 0.75 : 1.0;
             audio.play().then(() => {
                 audio.onended = () => { if(autoPlayActive) playConversationIndex(index + 1); };
             }).catch(() => { setTimeout(() => { if(autoPlayActive) playConversationIndex(index + 1); }, 2000); });
@@ -574,7 +548,7 @@
         if (!window.speechSynthesis) return;
         pendingAudioCallback = callback;
         const u = new SpeechSynthesisUtterance(text);
-        u.rate = slowSpeed ? 0.8 : 0.95; // Affects TTS too
+        u.rate = 0.95;
         const voices = window.speechSynthesis.getVoices();
         const fVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English'));
         if (fVoice) u.voice = fVoice;
@@ -590,12 +564,8 @@
     }
     function revealAndPlay(element) {
         element.classList.remove('obscured'); element.classList.add('revealed');
-        const audio = element.querySelector('audio');
-        if(audio) { 
-            audio.playbackRate = slowSpeed ? 0.75 : 1.0;
-            audio.currentTime = 0; 
-            audio.play().catch(e=>console.log(e)); 
-        }
+        const audio = element.querySelector('audio'); // Might be hidden now
+        if(audio) { audio.currentTime = 0; audio.play().catch(e=>console.log(e)); }
     }
 
     function revealAndSpeak(element, text) {
@@ -608,7 +578,6 @@
         const audio = document.querySelector('.card-view .slide-audio');
         cancelTTS();
         if(audio) {
-            audio.playbackRate = slowSpeed ? 0.75 : 1.0;
             audio.currentTime = 0;
             audio.play().catch(e=>console.log(e));
             // Play TTS once audio ends
@@ -631,10 +600,6 @@
         let audioCallback = null; 
 
         narratorBox.style.display = 'none'; 
-        
-        // WRAPPER DIV FOR ANIMATION
-        const wrapper = document.createElement('div');
-        wrapper.className = 'animate-slide'; // Slide Animation Class
 
         // 1. GOALS
         if (state.phase === 'goals') {
@@ -642,7 +607,7 @@
             textToSpeak = state.filename === 'review' ? "" : state.goalsText; 
             const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
             html = `
-                <div style="text-align:center;">
+                <div class="fade-in" style="text-align:center;">
                     <h2>Topic: ${state.title}</h2>
                     <div style="font-size:1.1rem; line-height:1.6; margin:20px 0; text-align:left; border: 1px solid #f0f0f0; padding:20px; background:#fafafa; border-radius:12px;">${formattedGoals}</div>
                 </div>`;
@@ -657,7 +622,6 @@
 
             if(textToSpeak) narratorBox.style.display = 'flex';
 
-            // DYNAMIC SPEAKER ASSIGNMENT LOGIC
             const uniqueSpeakers = [];
             state.conversationData.forEach(row => {
                 if (row.speaker && !uniqueSpeakers.includes(row.speaker)) {
@@ -665,13 +629,11 @@
                 }
             });
 
-            html = `<div class="chat-container">`;
+            html = `<div class="chat-container fade-in">`;
             state.conversationData.forEach((row, i) => {
-                // Find index
                 let spIndex = uniqueSpeakers.indexOf(row.speaker);
-                if (spIndex === -1) spIndex = 0; 
+                if (spIndex === -1) spIndex = 0;
                 
-                // Determine alignment and style
                 const alignClass = (spIndex % 2 === 0) ? 'left-aligned' : 'right-aligned';
                 const styleClass = `sp-style-${spIndex % 6}`;
                 
@@ -679,12 +641,11 @@
                     <span class="speaker-label">${row.speaker}</span>
                     <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
                     <div style="font-size:0.9rem; color:#666; margin-bottom: 10px;">${row.english}</div>
-                    ${renderMedia(row.audio_url)}
+                    ${renderMedia(row.audio_url, false)} <!-- Native Controls for Chat -->
                 </div>`;
             });
             html += `</div>`;
             
-            // DELAYED AUTO PLAY
             audioCallback = () => {
                 setTimeout(() => { startConversationPlayback(); }, 500);
             };
@@ -705,16 +666,13 @@
                 textToSpeak = ""; 
             }
 
-            // 'n' = Narrator Slide
             if (type === 'n') {
                 narratorBox.style.display = 'none';
-                html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div>`;
+                html = `<div class="card-view fade-in"><div class="narrator-slide">${row.narrator_text}</div></div>`;
             }
-            // 'p' = Practice
+            // PRACTICE ('p')
             else if (type === 'p') {
                 const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                
-                // Auto Play: Audio -> TTS
                 audioCallback = () => { playAudioThenTTS(safeEnglish); };
                 
                 let contentClass = "hidden-content-box revealed";
@@ -722,20 +680,18 @@
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
                 html = `
-                    <div class="card-view">
+                    <div class="card-view fade-in">
                         ${imgHtml}
-                        ${renderMedia(row.audio_url)}
+                        ${renderMedia(row.audio_url, true)} <!-- Custom Player -->
                         <div class="native-text" style="margin-bottom:20px;">${row.ayajuthem}</div>
                         <div class="${contentClass}" ${onClickAttr}>
                             <div class="translation" style="font-size:1.5rem; color:var(--primary); font-weight:600;">${row.english}</div>
                         </div>
                     </div>`;
             }
-            // 'r' = Recall
+            // RECALL ('r')
             else if (type === 'r') {
                 const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                
-                // Auto Play: Audio only
                 audioCallback = () => { playCurrentSlideAudio(); };
                 
                 let contentClass = "hidden-content-box obscured";
@@ -743,9 +699,9 @@
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
                 html = `
-                    <div class="card-view">
+                    <div class="card-view fade-in">
                         ${imgHtml}
-                        ${renderMedia(row.audio_url)}
+                        ${renderMedia(row.audio_url, true)} <!-- Custom Player -->
                         <div class="native-text" style="margin-bottom:20px;">${row.ayajuthem}</div>
                         <div class="reveal-hint visible">[Tap to Reveal & Speak]</div>
                         <div class="${contentClass}" ${onClickAttr}>
@@ -753,20 +709,20 @@
                         </div>
                     </div>`;
             }
-            // 't' = Test
+            // TEST ('t')
             else if (type === 't') {
                 let contentClass = "hidden-content-box obscured";
                 let onClickAttr = `onclick="revealAndPlay(this)"`;
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
                 html = `
-                    <div class="card-view">
+                    <div class="card-view fade-in">
                         ${imgHtml}
                         <div class="prompt-text">How would you say: <br>"${row.english}"?</div>
                         <div class="reveal-hint visible">[Click to Reveal & Play]</div>
                         <div class="${contentClass}" ${onClickAttr}>
                             <div style="display:flex; justify-content:center; width:100%; margin-bottom:10px;">
-                                ${renderMedia(row.audio_url)}
+                                ${renderMedia(row.audio_url, true)} <!-- Custom Player -->
                             </div>
                             <div class="native-text">${row.ayajuthem}</div>
                         </div>
@@ -781,14 +737,11 @@
             textToSpeak = "Lesson complete.";
             if (state.filename === 'review') textToSpeak = "";
 
-            html = `<div style="text-align:center; margin-top:50px;"><h1>Done!</h1><p>Lesson Complete.</p></div>`;
+            html = `<div class="fade-in" style="text-align:center; margin-top:50px;"><h1>Done!</h1><p>Lesson Complete.</p></div>`;
         }
 
-        wrapper.innerHTML = html;
-        container.innerHTML = "";
-        container.appendChild(wrapper);
+        container.innerHTML = html;
         
-        // Trigger TTS logic
         if (textToSpeak) { 
             narratorEl.innerText = textToSpeak; 
             speak(textToSpeak, audioCallback); 

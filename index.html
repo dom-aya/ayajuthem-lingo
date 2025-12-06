@@ -516,10 +516,31 @@
         if(audio) { audio.currentTime = 0; audio.play().catch(e=>console.log(e)); }
     }
 
-    function revealAndSpeak(element, text) {
-        element.classList.remove('obscured'); 
+    function revealAndPlaySequence(element, textToSpeak) {
+        // 1. Reveal content
+        element.classList.remove('obscured');
         element.classList.add('revealed');
-        if(text) speak(text);
+
+        // 2. Find audio in the parent container
+        const cardView = element.closest('.card-view');
+        const audio = cardView.querySelector('audio');
+
+        cancelTTS();
+
+        if (audio) {
+            // Play Audio
+            audio.currentTime = 0;
+            audio.play().catch(e => console.error("Audio play error", e));
+            
+            // 3. When Audio ends -> TTS
+            // Using { once: true } ensures this specific listener runs only once per click
+            audio.addEventListener('ended', () => {
+                if(textToSpeak) speak(textToSpeak);
+            }, { once: true });
+        } else {
+            // Fallback if no audio exists
+            if (textToSpeak) speak(textToSpeak);
+        }
     }
 
     // --- MAIN RENDER ---
@@ -605,6 +626,13 @@
                 textToSpeak = ""; 
             }
 
+            // === TYPE DEFINITIONS for Lesson Planners ===
+            // 'n' = Narrator Slide: Shows a text box with information.
+            // 'p' = Practice: Shows Audio + Native text. English hidden until revealed. On reveal -> Play Audio then TTS English.
+            // 'r' = Recall: Shows Native text + Audio. English hidden until revealed. On reveal -> Play Audio then TTS English.
+            // 't' = Test: Shows English prompt. Native text + Audio hidden until revealed.
+            // ============================================
+
             if (type === 'n') {
                 narratorBox.style.display = 'none';
                 html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div>`;
@@ -614,7 +642,10 @@
                 audioCallback = () => { playCurrentSlideAudio(); };
                 
                 let contentClass = "hidden-content-box obscured";
-                let onClickAttr = `onclick="this.classList.remove('obscured'); this.classList.add('revealed')"`;
+                const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                // Updated to use revealAndPlaySequence
+                let onClickAttr = `onclick="revealAndPlaySequence(this, '${safeEnglish}')"`;
+                
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
                 html = `
@@ -635,7 +666,8 @@
                 
                 let contentClass = "hidden-content-box obscured";
                 const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-                let onClickAttr = `onclick="revealAndSpeak(this, '${safeEnglish}')"`;
+                // Updated to use revealAndPlaySequence
+                let onClickAttr = `onclick="revealAndPlaySequence(this, '${safeEnglish}')"`;
                 
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 

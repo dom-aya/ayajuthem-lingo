@@ -69,12 +69,7 @@
             display: flex;
             flex-direction: column;
             scroll-behavior: smooth;
-            position: relative; /* For transitions */
         }
-
-        /* ANIMATIONS */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
 
         /* ACTION BAR (Fixed Bottom) */
         #action-bar {
@@ -148,17 +143,6 @@
 
         .card-image { max-width: 100%; max-height: 200px; border-radius: 8px; margin-bottom: 15px; object-fit: cover; }
         .media-container { width: 100%; margin-bottom: 10px; max-width: 500px; display: flex; justify-content: center; }
-        
-        /* CUSTOM AUDIO PLAYER
-        .custom-audio-btn {
-            width: 60px; height: 60px; background: var(--accent); color: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.1s, background 0.2s;
-            font-size: 24px; border: none; margin: 10px auto;
-        }
-        .custom-audio-btn:active { transform: scale(0.95); background: #219150; }
-        .custom-audio-btn svg { fill: white; width: 24px; height: 24px; }
-        */
         
         /* ACTION BUTTONS */
         .big-btn { 
@@ -279,7 +263,7 @@
             const isDone = completedLessons.includes(lesson.file);
             
             const card = document.createElement('div');
-            card.className = `lesson-card ${isDone ? 'completed' : ''} fade-in`;
+            card.className = `lesson-card ${isDone ? 'completed' : ''}`;
             card.onclick = () => loadLesson(lesson);
             
             const statusHtml = isDone ? `<div class="status">COMPLETED</div>` : '';
@@ -290,7 +274,7 @@
         // Review Card
         if (completedLessons.length > 0) {
             const reviewCard = document.createElement('div');
-            reviewCard.className = `lesson-card review-card fade-in`;
+            reviewCard.className = `lesson-card review-card`;
             reviewCard.onclick = () => startReview();
             reviewCard.innerHTML = `<h3>Review Mode</h3>`;
             grid.appendChild(reviewCard);
@@ -475,24 +459,14 @@
     });
 
     // --- HELPERS ---
-    function renderMedia(url, useCustomPlayer = false) {
+    function renderMedia(url) {
         if (!url) return '';
         const ytId = getYoutubeId(url);
         if (ytId) {
             return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
         } else {
-            // Use Custom Player for cards, Native for Chat
-            if (useCustomPlayer) {
-                return `
-                <div class="media-container">
-                    <audio class="slide-audio" src="${url}" style="display:none;"></audio>
-                    <button class="custom-audio-btn" onclick="playCurrentSlideAudio()">
-                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    </button>
-                </div>`;
-            } else {
-                return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
-            }
+            // ALWAYS USE STANDARD PLAYER
+            return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
         }
     }
 
@@ -504,7 +478,7 @@
     }
 
     function playCurrentSlideAudio() {
-        // Find audio, whether it's hidden or not
+        // Find audio
         const audio = document.querySelector('.card-view .slide-audio') || document.querySelector('.chat-row.active-playing .slide-audio');
         if (audio) {
             audio.currentTime = 0; 
@@ -608,7 +582,7 @@
             textToSpeak = state.filename === 'review' ? "" : state.goalsText; 
             const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
             html = `
-                <div class="fade-in" style="text-align:center;">
+                <div style="text-align:center;">
                     <h2>Topic: ${state.title}</h2>
                     <div style="font-size:1.1rem; line-height:1.6; margin:20px 0; text-align:left; border: 1px solid #f0f0f0; padding:20px; background:#fafafa; border-radius:12px;">${formattedGoals}</div>
                 </div>`;
@@ -630,7 +604,7 @@
                 }
             });
 
-            html = `<div class="chat-container fade-in">`;
+            html = `<div class="chat-container">`;
             state.conversationData.forEach((row, i) => {
                 let spIndex = uniqueSpeakers.indexOf(row.speaker);
                 if (spIndex === -1) spIndex = 0;
@@ -642,7 +616,7 @@
                     <span class="speaker-label">${row.speaker}</span>
                     <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
                     <div style="font-size:0.9rem; color:#666; margin-bottom: 10px;">${row.english}</div>
-                    ${renderMedia(row.audio_url, false)} <!-- Native Controls for Chat -->
+                    ${renderMedia(row.audio_url)}
                 </div>`;
             });
             html += `</div>`;
@@ -669,7 +643,7 @@
 
             if (type === 'n') {
                 narratorBox.style.display = 'none';
-                html = `<div class="card-view fade-in"><div class="narrator-slide">${row.narrator_text}</div></div>`;
+                html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div>`;
             }
             // PRACTICE ('p')
             else if (type === 'p') {
@@ -681,9 +655,9 @@
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
                 html = `
-                    <div class="card-view fade-in">
+                    <div class="card-view">
                         ${imgHtml}
-                        ${renderMedia(row.audio_url, true)} <!-- Custom Player -->
+                        ${renderMedia(row.audio_url)}
                         <div class="native-text" style="margin-bottom:20px;">${row.ayajuthem}</div>
                         <div class="${contentClass}" ${onClickAttr}>
                             <div class="translation" style="font-size:1.5rem; color:var(--primary); font-weight:600;">${row.english}</div>
@@ -700,9 +674,9 @@
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
                 html = `
-                    <div class="card-view fade-in">
+                    <div class="card-view">
                         ${imgHtml}
-                        ${renderMedia(row.audio_url, true)} <!-- Custom Player -->
+                        ${renderMedia(row.audio_url)}
                         <div class="native-text" style="margin-bottom:20px;">${row.ayajuthem}</div>
                         <div class="reveal-hint visible">[Tap to Reveal & Speak]</div>
                         <div class="${contentClass}" ${onClickAttr}>
@@ -717,13 +691,13 @@
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
 
                 html = `
-                    <div class="card-view fade-in">
+                    <div class="card-view">
                         ${imgHtml}
                         <div class="prompt-text">How would you say: <br>"${row.english}"?</div>
                         <div class="reveal-hint visible">[Click to Reveal & Play]</div>
                         <div class="${contentClass}" ${onClickAttr}>
                             <div style="display:flex; justify-content:center; width:100%; margin-bottom:10px;">
-                                ${renderMedia(row.audio_url, true)} <!-- Custom Player -->
+                                ${renderMedia(row.audio_url)}
                             </div>
                             <div class="native-text">${row.ayajuthem}</div>
                         </div>
@@ -738,7 +712,7 @@
             textToSpeak = "Lesson complete.";
             if (state.filename === 'review') textToSpeak = "";
 
-            html = `<div class="fade-in" style="text-align:center; margin-top:50px;"><h1>Done!</h1><p>Lesson Complete.</p></div>`;
+            html = `<div style="text-align:center; margin-top:50px;"><h1>Done!</h1><p>Lesson Complete.</p></div>`;
         }
 
         container.innerHTML = html;

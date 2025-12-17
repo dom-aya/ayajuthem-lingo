@@ -38,6 +38,7 @@
             flex-direction: column; 
             border-left: 1px solid #e0e0e0;
             border-right: 1px solid #e0e0e0;
+            position: relative; /* For sidebar absolute positioning context if needed */
         }
         
         /* HEADER */
@@ -50,13 +51,49 @@
             align-items: center;
         }
         header h2 { margin: 0; font-weight: 700; letter-spacing: 1px; text-align: center; grid-column: 2; }
+        .header-left { grid-column: 1; display: flex; align-items: center; }
         .header-right { grid-column: 3; text-align: right; }
 
+        .icon-btn {
+            background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 10px;
+        }
         .exit-btn {
             background: rgba(255,255,255,0.1); color: #ecf0f1; border: 1px solid rgba(255,255,255,0.2); 
             padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; display: none;
         }
         .exit-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+
+        /* SIDEBAR */
+        .sidebar-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2999; display: none;
+            backdrop-filter: blur(2px);
+        }
+        .sidebar {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background: white; z-index: 3000; transition: left 0.3s ease-in-out;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+        }
+        .sidebar.open { left: 0; }
+        
+        .sidebar-header {
+            background: var(--primary); color: white; padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .sidebar-header h3 { margin: 0; font-size: 1.2rem; }
+        .close-sidebar-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        
+        .sidebar-content { padding: 20px; flex-grow: 1; }
+        
+        .sidebar-item {
+            padding: 15px 10px; border-bottom: 1px solid #eee; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; font-weight: 500; color: #555;
+            transition: background 0.2s;
+        }
+        .sidebar-item:hover { background: #f9f9f9; color: var(--primary); }
+        .sidebar-item.danger { color: #e74c3c; }
+        
+        .toggle-icon { font-size: 1.2rem; width: 30px; text-align: center; }
 
         /* PROGRESS BAR */
         .progress-container { width: 100%; background-color: #ecf0f1; height: 8px; flex-shrink: 0; display:none; }
@@ -156,82 +193,34 @@
         .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
         .big-btn.secondary:active { box-shadow: none; }
 
-        /* TTS TOGGLE */
-        .tts-toggle {
-            background: transparent;
-            border: 1px solid #dcdcdc;
-            color: var(--primary);
-            border-radius: 30px;
-            padding: 8px 16px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-        .tts-toggle:hover { background: #f9f9f9; border-color: #bbb; }
-        .tts-toggle.disabled { color: #bdc3c7; border-color: #eee; }
-        
-        /* FOOTER LINKS */
-        .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 10px;}
-        .reset-link:hover { color: #e74c3c; }
-
-        .credits-link { text-align: center; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 20px; }
-        .credits-link:hover { color: var(--primary); }
-
         #btn-back, #btn-next { visibility: hidden; }
 
-        /* MODAL OVERLAY STYLES */
+        /* MODAL OVERLAY STYLES (For Acknowledgements) */
         .modal-overlay {
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(2px);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 4000;
+            justify-content: center; align-items: center; backdrop-filter: blur(2px);
         }
 
         .modal-box {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 90%;
-            width: 450px;
-            text-align: center;
+            background: white; padding: 30px; border-radius: 12px;
+            max-width: 90%; width: 450px; text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             animation: fadeIn 0.3s ease;
         }
 
         .modal-box h3 {
-            color: var(--primary);
-            margin-top: 0;
-            border-bottom: 2px solid var(--accent);
-            display: inline-block;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
+            color: var(--primary); margin-top: 0; border-bottom: 2px solid var(--accent);
+            display: inline-block; padding-bottom: 5px; margin-bottom: 15px;
         }
 
-        .modal-box p {
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
+        .modal-box p { line-height: 1.6; margin-bottom: 15px; }
 
         .modal-close {
-            margin-top: 10px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 25px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
+            margin-top: 10px; background: var(--primary); color: white;
+            border: none; padding: 8px 25px; border-radius: 20px;
+            cursor: pointer; font-weight: 600;
         }
         .modal-close:hover { background: #34495e; }
 
@@ -244,9 +233,34 @@
 </head>
 <body>
 
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <h3>Settings</h3>
+        <button class="close-sidebar-btn" onclick="closeSidebar()">×</button>
+    </div>
+    <div class="sidebar-content">
+        <div class="sidebar-item" onclick="toggleTTS()">
+            <span id="sidebar-tts-icon" class="toggle-icon">🔊</span>
+            <span id="sidebar-tts-text">Voice Auto-Play: ON</span>
+        </div>
+        <div class="sidebar-item" onclick="showCredits(); closeSidebar()">
+            <span class="toggle-icon">ℹ️</span>
+            <span>Acknowledgements</span>
+        </div>
+        <div class="sidebar-item danger" style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;" onclick="resetProgress(); closeSidebar()">
+            <span class="toggle-icon">⚠️</span>
+            <span>Reset Progress</span>
+        </div>
+    </div>
+</div>
+
 <div class="container">
     <header>
-        <div></div> <h2>Ayalingo</h2>
+        <div class="header-left">
+            <button class="icon-btn" onclick="openSidebar()">☰</button>
+        </div>
+        <h2>Ayalingo</h2>
         <div class="header-right">
             <button id="exit-btn" class="exit-btn" onclick="exitLesson()">Exit</button>
         </div>
@@ -267,14 +281,11 @@
         
         <div id="menu-view">
             <div id="menu-grid" class="menu-grid"></div>
-            <div class="reset-link" onclick="resetProgress()">Reset Progress</div>
-            <div class="credits-link" onclick="showCredits()">Acknowledgements</div>
         </div>
     </div>
 
     <div id="action-bar" style="display:none;">
         <button id="btn-back" class="big-btn secondary" onclick="handlePrevAction()">Back</button>
-        <button id="btn-tts-toggle" class="tts-toggle" onclick="toggleTTS()">🔊 ON</button>
         <button id="btn-next" class="big-btn" onclick="handleNextAction()">Next</button>
     </div>
 </div>
@@ -337,7 +348,7 @@
 
     // --- INITIALIZATION ---
     window.onload = () => { 
-        updateTTSButton(); // Set initial button state
+        updateSidebarTTS(); // Init sidebar state
         fetch('manifest.json')
             .then(response => response.json())
             .then(data => {
@@ -349,6 +360,39 @@
                 document.getElementById('menu-grid').innerHTML = "<p>Error loading lessons.</p>";
             });
     };
+
+    // --- SIDEBAR LOGIC ---
+    function openSidebar() {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('sidebar-overlay').style.display = 'block';
+    }
+    
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebar-overlay').style.display = 'none';
+    }
+
+    function toggleTTS() {
+        ttsEnabled = !ttsEnabled;
+        localStorage.setItem('ayalingo_tts', ttsEnabled);
+        updateSidebarTTS();
+        if(!ttsEnabled) cancelTTS();
+    }
+
+    function updateSidebarTTS() {
+        const icon = document.getElementById('sidebar-tts-icon');
+        const text = document.getElementById('sidebar-tts-text');
+        
+        if (ttsEnabled) {
+            icon.innerText = '🔊';
+            text.innerText = 'Voice Auto-Play: ON';
+            icon.style.opacity = '1';
+        } else {
+            icon.innerText = '🔇';
+            text.innerText = 'Voice Auto-Play: OFF';
+            icon.style.opacity = '0.5';
+        }
+    }
 
     // --- MENU LOGIC ---
     function renderMenu() {
@@ -421,25 +465,6 @@
     function hideCredits(e) {
         if (!e || e.target.id === 'credits-modal' || e.target.classList.contains('modal-close')) {
             document.getElementById('credits-modal').style.display = 'none';
-        }
-    }
-
-    // --- TTS TOGGLE LOGIC ---
-    function toggleTTS() {
-        ttsEnabled = !ttsEnabled;
-        localStorage.setItem('ayalingo_tts', ttsEnabled);
-        updateTTSButton();
-        if(!ttsEnabled) cancelTTS();
-    }
-
-    function updateTTSButton() {
-        const btn = document.getElementById('btn-tts-toggle');
-        if (ttsEnabled) {
-            btn.innerHTML = 'On';
-            btn.classList.remove('disabled');
-        } else {
-            btn.innerHTML = 'Off';
-            btn.classList.add('disabled');
         }
     }
 

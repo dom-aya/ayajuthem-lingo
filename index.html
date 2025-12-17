@@ -156,10 +156,71 @@
         .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
         .big-btn.secondary:active { box-shadow: none; }
         
-        .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 20px;}
+        /* FOOTER LINKS */
+        .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 10px;}
         .reset-link:hover { color: #e74c3c; }
 
+        .credits-link { text-align: center; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 20px; }
+        .credits-link:hover { color: var(--primary); }
+
         #btn-back, #btn-next { visibility: hidden; }
+
+        /* MODAL OVERLAY STYLES */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 90%;
+            width: 450px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-box h3 {
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .modal-box p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .modal-close {
+            margin-top: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .modal-close:hover { background: #34495e; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
     </style>
 </head>
@@ -189,12 +250,27 @@
         <div id="menu-view">
             <div id="menu-grid" class="menu-grid"></div>
             <div class="reset-link" onclick="resetProgress()">Reset Progress</div>
+            <div class="credits-link" onclick="showCredits()">Acknowledgements</div>
         </div>
     </div>
 
     <div id="action-bar" style="display:none;">
         <button id="btn-back" class="big-btn secondary" onclick="handlePrevAction()">Back</button>
         <button id="btn-next" class="big-btn" onclick="handleNextAction()">Next</button>
+    </div>
+</div>
+
+<div id="credits-modal" class="modal-overlay" onclick="hideCredits(event)">
+    <div class="modal-box">
+        <h3>Acknowledgements</h3>
+        <p>Lessons and recordings from the χʷɛmaɬkʷu First Preliminary Language Text.</p>
+        <p style="font-style:italic; font-size: 0.95rem; color: #555;">
+            Dr. Susan J. Blake, Mabel Harry, Ernest G. Harry, Jimmy Wilson, Lorraine Harry, Lawrence Harry, and Joanne Francis.
+        </p>
+        <p style="font-style:italic; font-size: 0.95rem; color: #555;">
+            Ayalingo is created by the Homalco Language Team and any mistakes or errors are the sole responsibility of the Homalco Language Team. We dedicate this program to all of our language warriors, past and present, who have fought to keep our langauge alive. čɛčɛhatanapɛst.
+        </p>
+        <button class="modal-close" onclick="hideCredits()">Close</button>
     </div>
 </div>
 
@@ -319,6 +395,18 @@
             localStorage.removeItem('ayalingo_progress');
             completedLessons = [];
             renderMenu();
+        }
+    }
+
+    // --- MODAL LOGIC ---
+    function showCredits() {
+        document.getElementById('credits-modal').style.display = 'flex';
+    }
+
+    function hideCredits(e) {
+        // If e is defined, check if click target is the overlay background or close button
+        if (!e || e.target.id === 'credits-modal' || e.target.classList.contains('modal-close')) {
+            document.getElementById('credits-modal').style.display = 'none';
         }
     }
 

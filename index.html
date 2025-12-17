@@ -38,7 +38,6 @@
             flex-direction: column; 
             border-left: 1px solid #e0e0e0;
             border-right: 1px solid #e0e0e0;
-            position: relative; /* For sidebar absolute positioning context if needed */
         }
         
         /* HEADER */
@@ -51,49 +50,13 @@
             align-items: center;
         }
         header h2 { margin: 0; font-weight: 700; letter-spacing: 1px; text-align: center; grid-column: 2; }
-        .header-left { grid-column: 1; display: flex; align-items: center; }
         .header-right { grid-column: 3; text-align: right; }
 
-        .icon-btn {
-            background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0 10px;
-        }
         .exit-btn {
             background: rgba(255,255,255,0.1); color: #ecf0f1; border: 1px solid rgba(255,255,255,0.2); 
             padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; display: none;
         }
         .exit-btn:hover { background: rgba(255,255,255,0.2); color: white; }
-
-        /* SIDEBAR */
-        .sidebar-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 2999; display: none;
-            backdrop-filter: blur(2px);
-        }
-        .sidebar {
-            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-            background: white; z-index: 3000; transition: left 0.3s ease-in-out;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column;
-        }
-        .sidebar.open { left: 0; }
-        
-        .sidebar-header {
-            background: var(--primary); color: white; padding: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .sidebar-header h3 { margin: 0; font-size: 1.2rem; }
-        .close-sidebar-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-        
-        .sidebar-content { padding: 20px; flex-grow: 1; }
-        
-        .sidebar-item {
-            padding: 15px 10px; border-bottom: 1px solid #eee; cursor: pointer;
-            display: flex; align-items: center; gap: 10px; font-weight: 500; color: #555;
-            transition: background 0.2s;
-        }
-        .sidebar-item:hover { background: #f9f9f9; color: var(--primary); }
-        .sidebar-item.danger { color: #e74c3c; }
-        
-        .toggle-icon { font-size: 1.2rem; width: 30px; text-align: center; }
 
         /* PROGRESS BAR */
         .progress-container { width: 100%; background-color: #ecf0f1; height: 8px; flex-shrink: 0; display:none; }
@@ -186,41 +149,71 @@
         .big-btn { 
             background: var(--primary); color: white; border: none; 
             padding: 12px 30px; border-radius: 8px; cursor: pointer; 
-            font-size: 1rem; font-weight: 600; min-width: 100px;
+            font-size: 1rem; font-weight: 600; min-width: 120px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform 0.1s; 
         }
         .big-btn:active { transform: translateY(4px); box-shadow: none; }
         .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
         .big-btn.secondary:active { box-shadow: none; }
+        
+        /* FOOTER LINKS */
+        .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 10px;}
+        .reset-link:hover { color: #e74c3c; }
+
+        .credits-link { text-align: center; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 20px; }
+        .credits-link:hover { color: var(--primary); }
 
         #btn-back, #btn-next { visibility: hidden; }
 
-        /* MODAL OVERLAY STYLES (For Acknowledgements) */
+        /* MODAL OVERLAY STYLES */
         .modal-overlay {
             display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 4000;
-            justify-content: center; align-items: center; backdrop-filter: blur(2px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
         }
 
         .modal-box {
-            background: white; padding: 30px; border-radius: 12px;
-            max-width: 90%; width: 450px; text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 90%;
+            width: 450px;
+            text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             animation: fadeIn 0.3s ease;
         }
 
         .modal-box h3 {
-            color: var(--primary); margin-top: 0; border-bottom: 2px solid var(--accent);
-            display: inline-block; padding-bottom: 5px; margin-bottom: 15px;
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
         }
 
-        .modal-box p { line-height: 1.6; margin-bottom: 15px; }
+        .modal-box p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
 
         .modal-close {
-            margin-top: 10px; background: var(--primary); color: white;
-            border: none; padding: 8px 25px; border-radius: 20px;
-            cursor: pointer; font-weight: 600;
+            margin-top: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
         }
         .modal-close:hover { background: #34495e; }
 
@@ -233,31 +226,9 @@
 </head>
 <body>
 
-<div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
-<div id="sidebar" class="sidebar">
-    <div class="sidebar-header">
-        <h3>Settings</h3>
-        <button class="close-sidebar-btn" onclick="closeSidebar()">×</button>
-    </div>
-    <div class="sidebar-content">
-        <div class="sidebar-item" onclick="toggleTTS()">
-            <span id="sidebar-tts-text">Narrator: On</span>
-        </div>
-        <div class="sidebar-item" onclick="showCredits(); closeSidebar()">
-            <span>Acknowledgements</span>
-        </div>
-        <div class="sidebar-item danger" style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;" onclick="resetProgress(); closeSidebar()">
-            <span>Reset Progress</span>
-        </div>
-    </div>
-</div>
-
 <div class="container">
     <header>
-        <div class="header-left">
-            <button class="icon-btn" onclick="openSidebar()">☰</button>
-        </div>
-        <h2>Ayalingo</h2>
+        <div></div> <h2>Ayalingo</h2>
         <div class="header-right">
             <button id="exit-btn" class="exit-btn" onclick="exitLesson()">Exit</button>
         </div>
@@ -278,6 +249,8 @@
         
         <div id="menu-view">
             <div id="menu-grid" class="menu-grid"></div>
+            <div class="reset-link" onclick="resetProgress()">Reset Progress</div>
+            <div class="credits-link" onclick="showCredits()">Acknowledgements</div>
         </div>
     </div>
 
@@ -294,19 +267,13 @@
         <p style="font-style:italic; font-size: 0.95rem; color: #555;">
             Dr. Susan J. Blake, Mabel Harry, Ernest G. Harry, Jimmy Wilson, Lorraine Harry, Lawrence Harry, and Joanne Francis.
         </p>
-        <p style="font-style:italic; font-size: 0.95rem; color: #555;">
-            Ayalingo is created by the Homalco Language Team, any mistakes or errors are the sole resposibility of Homalco Language Team. We dedicate this work to our langauge warriors, past and present, who have fought to keep our language alive. čɛčɛhatanapɛst.
-        </p>
-        <p style="font-style:italic; font-size: 0.95rem; color: #555;">
-            Ayalingo is Liscensed under Creative Commons. Anyone can replicate and modify this work for any purpose aside for commercial. For more information contact dominic.fode@homalco.com
-        </p>
         <button class="modal-close" onclick="hideCredits()">Close</button>
     </div>
 </div>
 
 <script>
     // --- STATE ---
-    let lessonManifest = []; 
+    let lessonManifest = []; // Will be loaded from JSON
     let state = {
         conversationData: [], 
         sequenceData: [],     
@@ -320,9 +287,6 @@
     let autoPlayActive = false; 
     let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
     let pendingAudioCallback = null; 
-    
-    // TTS PREFERENCE
-    let ttsEnabled = localStorage.getItem('ayalingo_tts') !== 'false'; // Default true
     
     // --- TOUCH SUPPORT ---
     let touchStartX = 0;
@@ -339,19 +303,19 @@
 
     function handleSwipe() {
         const minSwipeDistance = 50; 
-        if (state.phase === 'menu') return; 
+        if (state.phase === 'menu') return; // Don't swipe on menu
 
         if (touchEndX < touchStartX - minSwipeDistance) {
-            handleNextAction(); 
+            handleNextAction(); // Swipe Left -> Next
         }
         if (touchEndX > touchStartX + minSwipeDistance) {
-            handlePrevAction(); 
+            handlePrevAction(); // Swipe Right -> Back
         }
     }
 
-    // --- INITIALIZATION ---
+    // --- INITILIZATION LOADING MANIFEST ---
     window.onload = () => { 
-        updateSidebarTTS(); // Init sidebar state
+        // Load the Manifest file first!
         fetch('manifest.json')
             .then(response => response.json())
             .then(data => {
@@ -363,37 +327,6 @@
                 document.getElementById('menu-grid').innerHTML = "<p>Error loading lessons.</p>";
             });
     };
-
-    // --- SIDEBAR LOGIC ---
-    function openSidebar() {
-        document.getElementById('sidebar').classList.add('open');
-        document.getElementById('sidebar-overlay').style.display = 'block';
-    }
-    
-    function closeSidebar() {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebar-overlay').style.display = 'none';
-    }
-
-    function toggleTTS() {
-        ttsEnabled = !ttsEnabled;
-        localStorage.setItem('ayalingo_tts', ttsEnabled);
-        updateSidebarTTS();
-        if(!ttsEnabled) cancelTTS();
-    }
-
-    function updateSidebarTTS() {
-        const icon = document.getElementById('sidebar-tts-icon');
-        const text = document.getElementById('sidebar-tts-text');
-        
-        if (ttsEnabled) {
-            text.innerText = 'Narrator: On';
-            icon.style.opacity = '1';
-        } else {
-            text.innerText = 'Narrator: Off';
-            icon.style.opacity = '0.5';
-        }
-    }
 
     // --- MENU LOGIC ---
     function renderMenu() {
@@ -412,6 +345,7 @@
             grid.appendChild(card);
         });
 
+        // Review Card
         if (completedLessons.length > 0) {
             const reviewCard = document.createElement('div');
             reviewCard.className = `lesson-card review-card`;
@@ -462,8 +396,12 @@
     }
 
     // --- MODAL LOGIC ---
-    function showCredits() { document.getElementById('credits-modal').style.display = 'flex'; }
+    function showCredits() {
+        document.getElementById('credits-modal').style.display = 'flex';
+    }
+
     function hideCredits(e) {
+        // If e is defined, check if click target is the overlay background or close button
         if (!e || e.target.id === 'credits-modal' || e.target.classList.contains('modal-close')) {
             document.getElementById('credits-modal').style.display = 'none';
         }
@@ -613,6 +551,7 @@
         if (ytId) {
             return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
         } else {
+            // ALWAYS USE STANDARD PLAYER
             return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
         }
     }
@@ -625,6 +564,7 @@
     }
 
     function playCurrentSlideAudio() {
+        // Find audio
         const audio = document.querySelector('.card-view .slide-audio') || document.querySelector('.chat-row.active-playing .slide-audio');
         if (audio) {
             audio.currentTime = 0; 
@@ -666,12 +606,7 @@
 
     function speak(text, callback) {
         cancelTTS(); 
-        // IF TTS IS DISABLED, JUST RUN CALLBACK & EXIT
-        if (!ttsEnabled || !window.speechSynthesis) {
-            if (callback) callback();
-            return;
-        }
-
+        if (!window.speechSynthesis) return;
         pendingAudioCallback = callback;
         const u = new SpeechSynthesisUtterance(text);
         u.rate = 0.95;
@@ -690,7 +625,7 @@
     }
     function revealAndPlay(element) {
         element.classList.remove('obscured'); element.classList.add('revealed');
-        const audio = element.querySelector('audio'); 
+        const audio = element.querySelector('audio'); // Might be hidden now
         if(audio) { audio.currentTime = 0; audio.play().catch(e=>console.log(e)); }
     }
 
@@ -706,6 +641,7 @@
         if(audio) {
             audio.currentTime = 0;
             audio.play().catch(e=>console.log(e));
+            // Play TTS once audio ends
             audio.addEventListener('ended', () => {
                 speak(text);
             }, { once: true });

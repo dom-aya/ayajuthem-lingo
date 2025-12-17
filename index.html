@@ -149,12 +149,30 @@
         .big-btn { 
             background: var(--primary); color: white; border: none; 
             padding: 12px 30px; border-radius: 8px; cursor: pointer; 
-            font-size: 1rem; font-weight: 600; min-width: 120px;
+            font-size: 1rem; font-weight: 600; min-width: 100px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.2); transition: transform 0.1s; 
         }
         .big-btn:active { transform: translateY(4px); box-shadow: none; }
         .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
         .big-btn.secondary:active { box-shadow: none; }
+
+        /* TTS TOGGLE */
+        .tts-toggle {
+            background: transparent;
+            border: 1px solid #dcdcdc;
+            color: var(--primary);
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        .tts-toggle:hover { background: #f9f9f9; border-color: #bbb; }
+        .tts-toggle.disabled { color: #bdc3c7; border-color: #eee; }
         
         /* FOOTER LINKS */
         .reset-link { text-align: center; margin-top: 30px; font-size: 0.8rem; color: #bdc3c7; text-decoration: underline; cursor: pointer; padding-bottom: 10px;}
@@ -256,6 +274,7 @@
 
     <div id="action-bar" style="display:none;">
         <button id="btn-back" class="big-btn secondary" onclick="handlePrevAction()">Back</button>
+        <button id="btn-tts-toggle" class="tts-toggle" onclick="toggleTTS()">🔊 ON</button>
         <button id="btn-next" class="big-btn" onclick="handleNextAction()">Next</button>
     </div>
 </div>
@@ -267,16 +286,13 @@
         <p style="font-style:italic; font-size: 0.95rem; color: #555;">
             Dr. Susan J. Blake, Mabel Harry, Ernest G. Harry, Jimmy Wilson, Lorraine Harry, Lawrence Harry, and Joanne Francis.
         </p>
-        <p style="font-style:italic; font-size: 0.95rem; color: #555;">
-            Ayalingo is created by the Homalco Language Team and any mistakes or errors are the sole responsibility of the Homalco Language Team. We dedicate this program to all of our language warriors, past and present, who have fought to keep our langauge alive. čɛčɛhatanapɛst.
-        </p>
         <button class="modal-close" onclick="hideCredits()">Close</button>
     </div>
 </div>
 
 <script>
     // --- STATE ---
-    let lessonManifest = []; // Will be loaded from JSON
+    let lessonManifest = []; 
     let state = {
         conversationData: [], 
         sequenceData: [],     
@@ -290,6 +306,9 @@
     let autoPlayActive = false; 
     let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
     let pendingAudioCallback = null; 
+    
+    // TTS PREFERENCE
+    let ttsEnabled = localStorage.getItem('ayalingo_tts') !== 'false'; // Default true
     
     // --- TOUCH SUPPORT ---
     let touchStartX = 0;
@@ -306,19 +325,19 @@
 
     function handleSwipe() {
         const minSwipeDistance = 50; 
-        if (state.phase === 'menu') return; // Don't swipe on menu
+        if (state.phase === 'menu') return; 
 
         if (touchEndX < touchStartX - minSwipeDistance) {
-            handleNextAction(); // Swipe Left -> Next
+            handleNextAction(); 
         }
         if (touchEndX > touchStartX + minSwipeDistance) {
-            handlePrevAction(); // Swipe Right -> Back
+            handlePrevAction(); 
         }
     }
 
-    // --- INITILIZATION LOADING MANIFEST ---
+    // --- INITIALIZATION ---
     window.onload = () => { 
-        // Load the Manifest file first!
+        updateTTSButton(); // Set initial button state
         fetch('manifest.json')
             .then(response => response.json())
             .then(data => {
@@ -348,7 +367,6 @@
             grid.appendChild(card);
         });
 
-        // Review Card
         if (completedLessons.length > 0) {
             const reviewCard = document.createElement('div');
             reviewCard.className = `lesson-card review-card`;
@@ -399,14 +417,29 @@
     }
 
     // --- MODAL LOGIC ---
-    function showCredits() {
-        document.getElementById('credits-modal').style.display = 'flex';
-    }
-
+    function showCredits() { document.getElementById('credits-modal').style.display = 'flex'; }
     function hideCredits(e) {
-        // If e is defined, check if click target is the overlay background or close button
         if (!e || e.target.id === 'credits-modal' || e.target.classList.contains('modal-close')) {
             document.getElementById('credits-modal').style.display = 'none';
+        }
+    }
+
+    // --- TTS TOGGLE LOGIC ---
+    function toggleTTS() {
+        ttsEnabled = !ttsEnabled;
+        localStorage.setItem('ayalingo_tts', ttsEnabled);
+        updateTTSButton();
+        if(!ttsEnabled) cancelTTS();
+    }
+
+    function updateTTSButton() {
+        const btn = document.getElementById('btn-tts-toggle');
+        if (ttsEnabled) {
+            btn.innerHTML = 'On';
+            btn.classList.remove('disabled');
+        } else {
+            btn.innerHTML = 'Off';
+            btn.classList.add('disabled');
         }
     }
 
@@ -554,7 +587,6 @@
         if (ytId) {
             return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
         } else {
-            // ALWAYS USE STANDARD PLAYER
             return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
         }
     }
@@ -567,7 +599,6 @@
     }
 
     function playCurrentSlideAudio() {
-        // Find audio
         const audio = document.querySelector('.card-view .slide-audio') || document.querySelector('.chat-row.active-playing .slide-audio');
         if (audio) {
             audio.currentTime = 0; 
@@ -609,7 +640,12 @@
 
     function speak(text, callback) {
         cancelTTS(); 
-        if (!window.speechSynthesis) return;
+        // IF TTS IS DISABLED, JUST RUN CALLBACK & EXIT
+        if (!ttsEnabled || !window.speechSynthesis) {
+            if (callback) callback();
+            return;
+        }
+
         pendingAudioCallback = callback;
         const u = new SpeechSynthesisUtterance(text);
         u.rate = 0.95;
@@ -628,7 +664,7 @@
     }
     function revealAndPlay(element) {
         element.classList.remove('obscured'); element.classList.add('revealed');
-        const audio = element.querySelector('audio'); // Might be hidden now
+        const audio = element.querySelector('audio'); 
         if(audio) { audio.currentTime = 0; audio.play().catch(e=>console.log(e)); }
     }
 
@@ -644,7 +680,6 @@
         if(audio) {
             audio.currentTime = 0;
             audio.play().catch(e=>console.log(e));
-            // Play TTS once audio ends
             audio.addEventListener('ended', () => {
                 speak(text);
             }, { once: true });

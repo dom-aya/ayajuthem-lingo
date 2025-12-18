@@ -10,5 +10,9 @@
   {
     "file": "assets/lessons/05_What are you doing tonight.csv",
     "title": "What are you doing tonight?"
+  },
+    {
+    "file": "assets/lessons/story_01_deer.csv",
+    "title": "Story: Deer & Rain"
   }
 ]

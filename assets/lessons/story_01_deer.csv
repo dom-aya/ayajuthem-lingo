@@ -1,0 +1,13 @@
+﻿type,audio_url,image_url,english,ayajuthem,speaker,narrator_text
+c,https://youtu.be/LcDSvFf78pY,,,,Molly,Listen to the story.
+r,assets\audio\mh_deer\01-it's really rainy outside.mp3,assets\audio\mh_deer\rain.png,It's really rainy outside,,Molly,
+r,assets\audio\mh_deer\02-and my mother tells me.mp3,assets\audio\mh_deer\mom.png,my mother tells me,,Molly,
+r,assets\audio\mh_deer\03-will you go look out the window.mp3,assets\audio\mh_deer\window.png,go look out the window,,Molly,
+r,assets\audio\mh_deer\04-the deer is counting.mp3,assets\audio\mh_deer\count.png,the deer is counting,,Molly,
+r,assets\audio\mh_deer\05-all of the rain.mp3,assets\audio\mh_deer\deer.png,all the rain,,Molly,
+r,"assets\audio\mh_deer\06-I really believed it, looking out the window.mp3",assets\audio\mh_deer\window.png,"I really believed it, sitting by the window",,Molly,
+r,assets\audio\mh_deer\07-really raining.mp3,assets\audio\mh_deer\rain.png,It's really rainy,,Molly,
+r,assets\audio\mh_deer\08-and I think the deer is so impressive.mp3,assets\audio\mh_deer\good.png,and I think the deer is so impressive,,Molly,
+r,assets\audio\mh_deer\09-he knows it all.mp3,assets\audio\mh_deer\deer.png,he knows it all,,Molly,
+r,assets\audio\mh_deer\10-and there's so much rain everywhere.mp3,assets\audio\mh_deer\rain.png,and there's so much rain everywhere,,Molly,
+p,assets\audio\mh_deer\11-story.mp3,,,,Molly,Close your eyes. Try to imagine the story.

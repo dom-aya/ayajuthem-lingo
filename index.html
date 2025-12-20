@@ -279,7 +279,7 @@
 
 <script>
     // --- STATE ---
-    let lessonManifest = []; // Will be loaded from JSON
+    let lessonManifest = []; 
     let state = {
         conversationData: [], 
         sequenceData: [],     
@@ -309,19 +309,18 @@
 
     function handleSwipe() {
         const minSwipeDistance = 50; 
-        if (state.phase === 'menu') return; // Don't swipe on menu
+        if (state.phase === 'menu') return; 
 
         if (touchEndX < touchStartX - minSwipeDistance) {
-            handleNextAction(); // Swipe Left -> Next
+            handleNextAction(); 
         }
         if (touchEndX > touchStartX + minSwipeDistance) {
-            handlePrevAction(); // Swipe Right -> Back
+            handlePrevAction(); 
         }
     }
 
     // --- INITILIZATION LOADING MANIFEST ---
     window.onload = () => { 
-        // Load the Manifest file first!
         fetch('manifest.json')
             .then(response => response.json())
             .then(data => {
@@ -351,7 +350,6 @@
             grid.appendChild(card);
         });
 
-        // Review Card
         if (completedLessons.length > 0) {
             const reviewCard = document.createElement('div');
             reviewCard.className = `lesson-card review-card`;
@@ -407,7 +405,6 @@
     }
 
     function hideCredits(e) {
-        // If e is defined, check if click target is the overlay background or close button
         if (!e || e.target.id === 'credits-modal' || e.target.classList.contains('modal-close')) {
             document.getElementById('credits-modal').style.display = 'none';
         }
@@ -557,7 +554,6 @@
         if (ytId) {
             return `<div class="media-container"><iframe width="100%" height="250" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen></iframe></div>`;
         } else {
-            // ALWAYS USE STANDARD PLAYER
             return `<div class="media-container"><audio class="slide-audio" controls src="${url}" style="width:100%;"></audio></div>`;
         }
     }
@@ -570,7 +566,6 @@
     }
 
     function playCurrentSlideAudio() {
-        // Find audio
         const audio = document.querySelector('.card-view .slide-audio') || document.querySelector('.chat-row.active-playing .slide-audio');
         if (audio) {
             audio.currentTime = 0; 
@@ -631,7 +626,7 @@
     }
     function revealAndPlay(element) {
         element.classList.remove('obscured'); element.classList.add('revealed');
-        const audio = element.querySelector('audio'); // Might be hidden now
+        const audio = element.querySelector('audio'); 
         if(audio) { audio.currentTime = 0; audio.play().catch(e=>console.log(e)); }
     }
 
@@ -647,7 +642,6 @@
         if(audio) {
             audio.currentTime = 0;
             audio.play().catch(e=>console.log(e));
-            // Play TTS once audio ends
             audio.addEventListener('ended', () => {
                 speak(text);
             }, { once: true });
@@ -668,6 +662,10 @@
 
         narratorBox.style.display = 'none'; 
 
+        // Get custom note from current row if it exists
+        const row = state.phase === 'practice' ? state.sequenceData[state.slideIndex] : null;
+        const customNote = row && row.note ? row.note.trim() : "";
+
         // 1. GOALS
         if (state.phase === 'goals') {
             updateButtons(false, "Start");
@@ -684,9 +682,13 @@
         // 2. CONVERSATION
         else if (state.phase === 'conversation') {
             updateButtons(true, "Practice");
-            textToSpeak = "Listen closely to the conversation.";
+            
+            // PRIORITY: Use note from first line of conversation if available
+            const firstRow = state.conversationData[0];
+            const convNote = firstRow && firstRow.note ? firstRow.note.trim() : "";
+            textToSpeak = convNote || "Listen closely to the conversation.";
+            
             if(state.filename === 'review') textToSpeak = "";
-
             if(textToSpeak) narratorBox.style.display = 'flex';
 
             const uniqueSpeakers = [];
@@ -720,24 +722,21 @@
         // 3. PRACTICE
         else if (state.phase === 'practice') {
             updateButtons(true, "Next");
-            const row = state.sequenceData[state.slideIndex];
             const type = row.type.toLowerCase().trim();
 
-            if (state.filename !== 'review') {
-                if (type === 'n') {
-                    textToSpeak = row.narrator_text; 
-                } else if (state.slideIndex === 0) {
-                    textToSpeak = "Now, let's practice."; 
-                }
-            } else {
-                textToSpeak = ""; 
+            // PRIORITY RULE: Custom note overrides everything.
+            if (customNote) {
+                textToSpeak = customNote;
+            } else if (type === 'n') {
+                textToSpeak = row.narrator_text; 
+            } else if (state.slideIndex === 0 && state.filename !== 'review') {
+                textToSpeak = "Now, let's practice."; 
             }
 
             if (type === 'n') {
-                narratorBox.style.display = 'none';
+                narratorBox.style.display = 'none'; // Narration is the slide itself
                 html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div>`;
             }
-            // PRACTICE ('p')
             else if (type === 'p') {
                 const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 audioCallback = () => { playAudioThenTTS(safeEnglish); };
@@ -756,7 +755,6 @@
                         </div>
                     </div>`;
             }
-            // RECALL ('r')
             else if (type === 'r') {
                 const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 audioCallback = () => { playCurrentSlideAudio(); };
@@ -776,7 +774,6 @@
                         </div>
                     </div>`;
             }
-            // TEST ('t')
             else if (type === 't') {
                 let contentClass = "hidden-content-box obscured";
                 let onClickAttr = `onclick="revealAndPlay(this)"`;
@@ -796,7 +793,7 @@
                     </div>`;
             }
             
-            if(textToSpeak && state.slideIndex === 0) narratorBox.style.display = 'flex';
+            if(textToSpeak && type !== 'n') narratorBox.style.display = 'flex';
         }
         // 4. FINISH
         else if (state.phase === 'finish') {

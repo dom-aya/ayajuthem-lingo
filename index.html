@@ -662,31 +662,30 @@
 
         narratorBox.style.display = 'none'; 
 
-        // Get custom note from current row if it exists
-        const row = state.phase === 'practice' ? state.sequenceData[state.slideIndex] : null;
-        const customNote = row && row.note ? row.note.trim() : "";
+        // Get custom narrator_text from current row if it exists
+        const row = state.phase === 'practice' ? state.sequenceData[state.slideIndex] : 
+                    (state.phase === 'conversation' ? state.conversationData[0] : null);
+        
+        // SINGLE SOURCE OF TRUTH: If 'narrator_text' is present in the CSV, we use it.
+        const priorityNarrator = row && row.narrator_text ? row.narrator_text.trim() : "";
 
         // 1. GOALS
         if (state.phase === 'goals') {
             updateButtons(false, "Start");
             textToSpeak = state.filename === 'review' ? "" : state.goalsText; 
             const formattedGoals = state.goalsText.replace(/\n/g, '<br>');
-            html = `
-                <div style="text-align:center;">
+            html = `<div style="text-align:center;">
                     <h2>Topic: ${state.title}</h2>
                     <div style="font-size:1.1rem; line-height:1.6; margin:20px 0; text-align:left; border: 1px solid #f0f0f0; padding:20px; background:#fafafa; border-radius:12px;">${formattedGoals}</div>
                 </div>`;
-            
             if(textToSpeak) narratorBox.style.display = 'flex';
         } 
         // 2. CONVERSATION
         else if (state.phase === 'conversation') {
             updateButtons(true, "Practice");
             
-            // PRIORITY: Use note from first line of conversation if available
-            const firstRow = state.conversationData[0];
-            const convNote = firstRow && firstRow.note ? firstRow.note.trim() : "";
-            textToSpeak = convNote || "Listen closely to the conversation.";
+            // PRIORITY: Use narrator_text from first line of conversation if available
+            textToSpeak = priorityNarrator || "Listen closely to the conversation.";
             
             if(state.filename === 'review') textToSpeak = "";
             if(textToSpeak) narratorBox.style.display = 'flex';
@@ -702,10 +701,8 @@
             state.conversationData.forEach((row, i) => {
                 let spIndex = uniqueSpeakers.indexOf(row.speaker);
                 if (spIndex === -1) spIndex = 0;
-                
                 const alignClass = (spIndex % 2 === 0) ? 'left-aligned' : 'right-aligned';
                 const styleClass = `sp-style-${spIndex % 6}`;
-                
                 html += `<div class="chat-row ${alignClass} ${styleClass}" id="row-${i}">
                     <span class="speaker-label">${row.speaker}</span>
                     <div style="font-size:1.1rem; margin-bottom: 5px;">${row.ayajuthem}</div>
@@ -714,43 +711,33 @@
                 </div>`;
             });
             html += `</div>`;
-            
-            audioCallback = () => {
-                setTimeout(() => { startConversationPlayback(); }, 500);
-            };
+            audioCallback = () => { setTimeout(() => { startConversationPlayback(); }, 500); };
         }
         // 3. PRACTICE
         else if (state.phase === 'practice') {
             updateButtons(true, "Next");
             const type = row.type.toLowerCase().trim();
 
-            // PRIORITY RULE: Custom note overrides everything.
-            if (customNote) {
-                textToSpeak = customNote;
-            } else if (type === 'n') {
-                textToSpeak = row.narrator_text; 
+            // PRIORITY RULE: custom narrator_text overrides the standard Slide 0 prompt
+            if (priorityNarrator) {
+                textToSpeak = priorityNarrator;
             } else if (state.slideIndex === 0 && state.filename !== 'review') {
                 textToSpeak = "Now, let's practice."; 
             }
 
             if (type === 'n') {
-                narratorBox.style.display = 'none'; // Narration is the slide itself
+                narratorBox.style.display = 'none'; // Narration is the slide content itself
                 html = `<div class="card-view"><div class="narrator-slide">${row.narrator_text}</div></div>`;
             }
             else if (type === 'p') {
                 const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 audioCallback = () => { playAudioThenTTS(safeEnglish); };
-                
-                let contentClass = "hidden-content-box revealed";
-                let onClickAttr = `onclick="speak('${safeEnglish}')"`;
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
-
-                html = `
-                    <div class="card-view">
+                html = `<div class="card-view">
                         ${imgHtml}
                         ${renderMedia(row.audio_url)}
                         <div class="native-text" style="margin-bottom:20px;">${row.ayajuthem}</div>
-                        <div class="${contentClass}" ${onClickAttr}>
+                        <div class="hidden-content-box revealed" onclick="speak('${safeEnglish}')">
                             <div class="translation" style="font-size:1.5rem; color:var(--primary); font-weight:600;">${row.english}</div>
                         </div>
                     </div>`;
@@ -758,33 +745,25 @@
             else if (type === 'r') {
                 const safeEnglish = (row.english || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 audioCallback = () => { playCurrentSlideAudio(); };
-                
-                let contentClass = "hidden-content-box obscured";
-                let onClickAttr = `onclick="revealAndSpeak(this, '${safeEnglish}')"`;
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
-
-                html = `
-                    <div class="card-view">
+                html = `<div class="card-view">
                         ${imgHtml}
                         ${renderMedia(row.audio_url)}
                         <div class="native-text" style="margin-bottom:20px;">${row.ayajuthem}</div>
                         <div class="reveal-hint visible">[Tap to Reveal & Speak]</div>
-                        <div class="${contentClass}" ${onClickAttr}>
+                        <div class="hidden-content-box obscured" onclick="revealAndSpeak(this, '${safeEnglish}')">
                             <div class="translation" style="font-size:1.5rem; color:var(--primary); font-weight:600;">${row.english}</div>
                         </div>
                     </div>`;
             }
             else if (type === 't') {
-                let contentClass = "hidden-content-box obscured";
-                let onClickAttr = `onclick="revealAndPlay(this)"`;
+                audioCallback = null;
                 const imgHtml = row.image_url ? `<img src="${row.image_url}" class="card-image">` : '';
-
-                html = `
-                    <div class="card-view">
+                html = `<div class="card-view">
                         ${imgHtml}
                         <div class="prompt-text">How would you say: <br>"${row.english}"?</div>
                         <div class="reveal-hint visible">[Click to Reveal & Play]</div>
-                        <div class="${contentClass}" ${onClickAttr}>
+                        <div class="hidden-content-box obscured" onclick="revealAndPlay(this)">
                             <div style="display:flex; justify-content:center; width:100%; margin-bottom:10px;">
                                 ${renderMedia(row.audio_url)}
                             </div>
@@ -793,6 +772,7 @@
                     </div>`;
             }
             
+            // Only show the narrator box if there is custom text (unless it's an 'n' slide content)
             if(textToSpeak && type !== 'n') narratorBox.style.display = 'flex';
         }
         // 4. FINISH
@@ -800,12 +780,10 @@
             updateButtons(false, "Finish");
             textToSpeak = "Lesson complete.";
             if (state.filename === 'review') textToSpeak = "";
-
             html = `<div style="text-align:center; margin-top:50px;"><h1>Done!</h1><p>Lesson Complete.</p></div>`;
         }
 
         container.innerHTML = html;
-        
         if (textToSpeak) { 
             narratorEl.innerText = textToSpeak; 
             speak(textToSpeak, audioCallback); 
@@ -814,9 +792,7 @@
             if(audioCallback) audioCallback();
         }
     }
-
     window.speechSynthesis.onvoiceschanged = () => {};
 </script>
-
 </body>
 </html>

@@ -12,7 +12,7 @@
 
 <style>
     .task-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
-    .task-text { font-size: 1.5rem; color: #7f8c8d; font-weight: 600; margin-bottom: 20px; }
+    .task-text { font-size: 3rem; color: #7f8c8d; font-weight: 600; margin-bottom: 20px; }
     .btn-group { display: flex; gap: 10px; justify-content: center; }
     .all-tasks-list { display: none; text-align: left; background: #fff; padding: 20px; border-radius: 12px; }
     body {font-family: Arial, sans-serif; background:#f9f9fb; padding:20px; max-width:800px; margin:auto;}
@@ -77,14 +77,14 @@
             const index = parseInt(seed) % allTasks.length;
             
             document.getElementById('task-label').innerText = "Today's Practice";
-            document.getElementById('task-content').innerText = HTMLREactParser(allTasks[index]);
+            document.getElementById('task-content').innerText = parse(allTasks[index]);
             document.getElementById('all-tasks').style.display = 'none';
         }
 
         function showRandom() {
             const index = Math.floor(Math.random() * allTasks.length);
             document.getElementById('task-label').innerText = "Random Practice";
-            document.getElementById('task-content').innerText = HTMLREactParser(allTasks[index]);
+            document.getElementById('task-content').innerText = parse(allTasks[index]);
         }
 
         function toggleAll() {
@@ -96,7 +96,7 @@
             const container = document.getElementById('list-container');
             allTasks.forEach(task => {
                 const li = document.createElement('li');
-                li.innerText = HTMLREactParser(task);
+                li.innerText = parse(task);
                 container.appendChild(li);
             });
         }

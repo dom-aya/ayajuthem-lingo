@@ -68,14 +68,14 @@
             // Use math to pick an index that is consistent for everyone today
             const index = parseInt(seed) % allTasks.length;
             
-            document.getElementById('task-label').innerText = "Today's Task";
+            document.getElementById('task-label').innerText = "Today's Practice";
             document.getElementById('task-content').innerText = allTasks[index];
             document.getElementById('all-tasks').style.display = 'none';
         }
 
         function showRandom() {
             const index = Math.floor(Math.random() * allTasks.length);
-            document.getElementById('task-label').innerText = "Random Task";
+            document.getElementById('task-label').innerText = "Random Practice";
             document.getElementById('task-content').innerText = allTasks[index];
         }
 

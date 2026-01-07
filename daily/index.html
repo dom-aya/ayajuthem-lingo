@@ -52,7 +52,7 @@
         let allTasks = [];
 
         // 1. Fetch the tasks from your JSON file
-        fetch('tasks.json')
+        fetch('/tasks.json')
             .then(res => res.json())
             .then(data => {
                 allTasks = data;

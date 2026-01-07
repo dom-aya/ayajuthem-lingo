@@ -77,14 +77,14 @@
             const index = parseInt(seed) % allTasks.length;
             
             document.getElementById('task-label').innerText = "Today's Practice";
-            document.getElementById('task-content').innerText = parse(allTasks[index]);
+            document.getElementById('task-content').innerText = window.HTMLReactParser(toString(allTasks[index]));
             document.getElementById('all-tasks').style.display = 'none';
         }
 
         function showRandom() {
             const index = Math.floor(Math.random() * allTasks.length);
             document.getElementById('task-label').innerText = "Random Practice";
-            document.getElementById('task-content').innerText = parse(allTasks[index]);
+            document.getElementById('task-content').innerText = window.HTMLReactParser(toString(allTasks[index]));
         }
 
         function toggleAll() {
@@ -96,7 +96,7 @@
             const container = document.getElementById('list-container');
             allTasks.forEach(task => {
                 const li = document.createElement('li');
-                li.innerText = parse(task);
+                li.innerText = window.HTMLReactParser(toString((task)));
                 container.appendChild(li);
             });
         }

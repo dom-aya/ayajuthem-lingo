@@ -57,6 +57,12 @@
             padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; display: none;
         }
         .exit-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+		
+		.nav-btn {
+            background: rgba(255,255,255,0.1); color: #ecf0f1; border: 1px solid rgba(255,255,255,0.2); 
+            padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; display: none;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.2); color: white; }
 
         /* PROGRESS BAR */
         .progress-container { width: 100%; background-color: #ecf0f1; height: 8px; flex-shrink: 0; display:none; }
@@ -230,8 +236,8 @@
     <header>
         <div></div> <h2>Ayalingo</h2>
         <div class="header-right">
-	        <button href="soundboard.html" class="exit-btn">Soundboard</button>
-            <button href="daily.html" class="exit-btn">Daily Quest</button>
+	        <button id="sound-btn" class="nav-btn" onclick"soundboard.html">Soundboard</button>
+            <button id="daily-btn" class="nav-btn" onclick="daily.html">Daily Quest</button>
             <button id="exit-btn" class="exit-btn" onclick="exitLesson()">Exit</button>
         </div>
     </header>

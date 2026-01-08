@@ -12,91 +12,67 @@
         height: 100dvh;
         display: flex;
         flex-direction: column;
+        /* Removed overflow: hidden from body so we can handle scrolling in the grid */
     }
-
-    h1 { 
-        text-align: center; 
-        color: #333; 
-        margin: 15px 0; 
-        font-size: 1.5rem;
-    }
-
+    h1 { text-align: center; color: #333; margin: 10px 0; }
+    
     .grid {
         display: grid;
-        /* minmax(85px, 1fr) ensures buttons aren't too small to tap, 
-           but not "overly big" on desktop */
-        grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+        /* Default for desktop: keep your original sizing */
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         gap: 12px;
+        padding: 10px; /* Add padding so buttons don't touch edges */
         
-        /* Centering and Horizontal Buffer settings */
-        width: 95%;          /* Leaves small gaps on mobile edges */
-        max-width: 800px;    /* Prevents grid from getting too wide on desktop */
-        margin: 0 auto;      /* Centers the grid horizontally */
-        
-        /* Scroll settings */
+        /* meaningful change: allows the grid to take available space and scroll internally */
         flex: 1;
-        overflow-y: auto;
-        padding-bottom: 20px;
+        overflow-y: auto; 
     }
 
-    .ipa-btn {
-        background: #fff; 
-        border: 1px solid #ccc; 
-        border-radius: 8px; 
-        
-        /* Text styling */
-        font-size: 1.8rem; 
-        color: #333;
-        
-        /* Interaction */
-        cursor: pointer; 
-        box-shadow: 0 2px 4px rgba(0,0,0,.1);
-        transition: background .2s, transform .1s;
-
-        /* Layout - Forces Square Shape */
-        aspect-ratio: 1 / 1; 
-        display: flex; 
-        justify-content: center; 
-        align-items: center;
-    }
-
-    .ipa-btn:hover { background: #eef; }
-    .ipa-btn:active { transform: scale(0.96); }
-
-    /* Mobile Tweaks */
+    /* --- NEW: Mobile Specific Adjustments --- */
     @media (max-width: 600px) {
         .grid {
-            /* Slightly larger minimum width on phones to ensure 
-               row count is higher and columns are fewer */
-            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            /* Increase min-width from 80px to 110px. 
+               On a typical phone (360px wide), this forces 3 columns instead of 4 or 5. */
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        }
+        
+        .ipa-btn {
+            /* Optional: Make buttons slightly larger/easier to tap on mobile */
+            padding: 16px; 
+            font-size: 2.2rem;
         }
     }
 
+    .ipa-btn {
+        background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 12px; text-align: center;
+        font-size: 2rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        transition: background .2s, transform .1s;
+        
+        /* Center content explicitly */
+        display: flex; justify-content: center; align-items: center;
+    }
+    .ipa-btn:hover { background: #eef; }
+    .ipa-btn:active { transform: scale(0.96); }
+    
     audio { display: none; }
-
+    
     .disclaimer {
         text-align: center;
         font-size: 0.7rem;
         color: #888;
         padding: 10px;
-        margin-top: auto;
+        margin-top: auto; /* Keeps it at the bottom if content is short */
     }
-
+    
     .header-right { 
         position: absolute; 
-        top: 20px; 
-        right: 20px; 
+        top: 15px; 
+        right: 15px; 
     }
     
     .nav-btn {
-        background: #3498db; 
-        color: white; 
-        text-decoration: none; 
-        border: none;
-        padding: 8px 16px; 
-        border-radius: 4px; 
-        font-size: 0.9rem; 
-        transition: background 0.2s;
+        background: #3498db; color: white; text-decoration: none; border: none;
+        padding: 8px 16px; border-radius: 4px; font-size: 0.9rem; transition: background 0.2s; white-space: nowrap;
     }
     .nav-btn:hover { background: #2980b9; }
 </style>

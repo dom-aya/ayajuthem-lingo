@@ -5,133 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #f0f2f5; /* Slightly darker to make the 'keyboard' pop */
-        height: 100dvh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    h1 { 
-        text-align: center; 
-        color: #333; 
-        margin: 15px 0; 
-        font-size: 1.5rem;
-    }
-
-    .grid {
-        display: grid;
-        gap: 8px; /* Tighter gap looks more like a keyboard */
-        padding: 10px;
-        
-        /* Centering */
-        margin: 0 auto;
-        width: 95%;
-        
-        /* DEFAULT (Desktop) - Familiar Keyboard Look 
-           12 columns x 3 rows = 36 keys */
-        grid-template-columns: repeat(12, 1fr);
-        max-width: 1100px; /* Limits width so keys don't get massive on huge monitors */
-
-        /* Scroll settings */
-        flex: 1;
-        overflow-y: auto;
-        align-content: start; /* Keeps rows packed at the top */
-    }
-
-    /* --- TABLET BREAKPOINT (Between 600px and 900px) --- */
-    @media (max-width: 900px) {
-        .grid {
-            /* 6 columns x 6 rows = 36 keys */
-            grid-template-columns: repeat(6, 1fr);
-            max-width: 600px; 
+    body, button, select, input, h1, h2, h3, h4, div, span, p, li, a {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
         }
-    }
+    /* Add specific link styling */
+    a { color: #2980b9; text-decoration: none; border-bottom: 1px dotted #2980b9; }
+    a:hover { border-bottom: 1px solid #2980b9; }
 
-    /* --- MOBILE BREAKPOINT (Phones) --- */
-    @media (max-width: 600px) {
-        .grid {
-            /* 4 columns x 9 rows = 36 keys 
-               This ensures buttons are very large and thumb-friendly */
-            grid-template-columns: repeat(4, 1fr);
-            max-width: 100%;
-        }
-        
-        .ipa-btn {
-            font-size: 1.8rem; /* Keep text large */
-        }
-    }
-
-    .ipa-btn {
-        background: #fff; 
-        border: 1px solid #c8c8c8; 
-        border-radius: 6px; /* Slightly squarer corners for keyboard look */
-        border-bottom-width: 3px; /* visual "depth" like a physical key */
-        
-        /* Text styling */
-        font-size: 1.5rem; 
-        color: #333;
-        font-weight: 500;
-        
-        /* Interaction */
-        cursor: pointer; 
-        transition: all 0.1s ease;
-        
-        /* Shape */
-        aspect-ratio: 1 / 1; 
-        display: flex; 
-        justify-content: center; 
-        align-items: center;
-        
-        /* Prevent text selection */
-        user-select: none;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .ipa-btn:active { 
-        transform: translateY(2px); /* Presses "down" */
-        border-bottom-width: 1px;   /* Reduces shadow/depth */
-        background: #e6e6e6;
-    }
-
-    audio { display: none; }
-
-    .disclaimer {
-        text-align: center;
-        font-size: 0.7rem;
-        color: #888;
-        padding: 10px;
-        margin-top: auto;
-    }
-
-    .header-right { 
-        position: absolute; 
-        top: 20px; 
-        right: 20px; 
+    /* Base styles */
+    body { background:#f9f9fb; padding:20px; max-width:800px; margin:auto;}
+    
+    .task-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
+    
+    /* Responsive Text: Uses 'clamp' to scale between 1.5rem and 3rem depending on screen width */
+    .task-text { 
+        font-size: clamp(1.5rem, 5vw, 3rem); 
+        color: #7f8c8d; 
+        font-weight: 600; 
+        margin-bottom: 20px; 
+        line-height: 1.3;
     }
     
-    .nav-btn {
-        background: #3498db; 
-        color: white; 
-        text-decoration: none; 
-        border: none;
-        padding: 8px 16px; 
-        border-radius: 4px; 
-        font-size: 0.9rem; 
-        transition: background 0.2s;
+    /* Ensure images/iframes in the main card fit within the box */
+    .task-text iframe, .task-text img { max-width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius: 8px; }
+    
+    .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    
+    .all-tasks-list { display: none; text-align: left; background: #fff; padding: 20px; border-radius: 12px; }
+    .all-tasks-list li { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+    
+	h1 {font-size:2rem; text-align:center; color:#333;}
+    
+	.big-btn {
+        background:#fff; border:1px solid #ccc; border-radius:8px; padding:12px 20px; text-align:center;
+        font-size:1.2rem; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.1);
+        transition:background .2s, transform .1s;
+        flex: 1; /* Allows buttons to grow evenly */
+        min-width: 120px; /* Prevents them from getting too squished */
     }
-    .nav-btn:hover { background: #2980b9; }
-</style>
+    .big-btn:hover {background:#eef;}
+    
+    header h2 { font-size:2rem; margin: 0 0 20px 0; font-weight: 700; letter-spacing: 1px; text-align: center; color: #2c3e50; }
+    
+    .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
+    .big-btn.secondary:active { box-shadow: none; }
 
+    /* MOBILE SPECIFIC ADJUSTMENTS */
+    @media (max-width: 600px) {
+        body { padding: 10px; }
+        .task-card { padding: 20px 15px; }
+        .big-btn { font-size: 1rem; padding: 12px 10px; }
+        header h2 { font-size: 1.5rem; }
+        #task-label { font-size: 0.9rem; }
+    }
+</style>
 </head>
 <body>
-
     <div class="container">
         <header><h2>Daily ʔayʔaǰuθəm Practice</h2></header>
-		
         
         <div id="task-display" class="task-card">
             <p id="task-label" style="text-transform: uppercase; color: #2c3e50; font-weight: bold; font-size: 1.5rem">Today's Practice</p>

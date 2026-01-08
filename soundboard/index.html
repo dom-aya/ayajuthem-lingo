@@ -2,94 +2,149 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ʔayʔaǰuθəm soundboard</title>
 <style>
     body {
         margin: 0;
         padding: 0;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #f9f9fb;
+        background: #f0f2f5;
         height: 100dvh;
         display: flex;
         flex-direction: column;
-        /* Removed overflow: hidden from body so we can handle scrolling in the grid */
-    }
-    h1 { text-align: center; color: #333; margin: 10px 0; }
-    
-    .grid {
-        display: grid;
-        /* Default for desktop: keep your original sizing */
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 12px;
-        padding: 10px; /* Add padding so buttons don't touch edges */
-        
-        /* meaningful change: allows the grid to take available space and scroll internally */
-        flex: 1;
-        overflow-y: auto; 
     }
 
-    /* --- NEW: Mobile Specific Adjustments --- */
-    @media (max-width: 600px) {
-        .grid {
-            /* Increase min-width from 80px to 110px. 
-               On a typical phone (360px wide), this forces 3 columns instead of 4 or 5. */
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-        }
+    header {
+        position: relative;
+        padding: 10px;
+        text-align: center;
+        background: #f0f2f5;
+        z-index: 10;
+    }
+
+    h1 { 
+        margin: 0; 
+        font-size: 1.4rem; 
+        color: #333; 
+    }
+
+    .header-right {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .nav-btn {
+        background: #3498db; 
+        color: white; 
+        text-decoration: none; 
+        padding: 6px 12px; 
+        border-radius: 4px; 
+        font-size: 0.8rem;
+    }
+
+    .grid-container {
+        flex: 1;
+        overflow-y: auto; /* Allows scrolling if buttons don't fit */
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centers the whole keyboard horizontally */
+    }
+
+    .grid {
+        display: grid;
+        gap: 8px;
+        width: 100%;
         
-        .ipa-btn {
-            /* Optional: Make buttons slightly larger/easier to tap on mobile */
-            padding: 16px; 
-            font-size: 2.2rem;
-        }
+        /* Stop rows from stretching to fill screen height! */
+        align-content: start; 
+        
+        /* DESKTOP DEFAULT: 12 columns (Standard Keyboard) */
+        grid-template-columns: repeat(12, 1fr);
+        max-width: 1000px; 
     }
 
     .ipa-btn {
-        background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 12px; text-align: center;
-        font-size: 2rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,.1);
-        transition: background .2s, transform .1s;
+        background: #fff; 
+        border: 1px solid #c8c8c8; 
+        border-radius: 6px; 
+        border-bottom-width: 3px;
+        color: #333;
+        font-weight: 500;
+        cursor: pointer; 
         
-        /* Center content explicitly */
-        display: flex; justify-content: center; align-items: center;
+        /* STRICT SQUARE SHAPE */
+        aspect-ratio: 1 / 1; 
+        width: 100%; /* Take full width of the column */
+        height: auto; /* Height is determined by aspect-ratio */
+        
+        display: flex; 
+        justify-content: center; 
+        align-items: center;
+        font-size: 1.5rem; 
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
     }
-    .ipa-btn:hover { background: #eef; }
-    .ipa-btn:active { transform: scale(0.96); }
+
+    .ipa-btn:active {
+        transform: translateY(2px);
+        border-bottom-width: 1px;
+        background: #e6e6e6;
+    }
+
+    /* --- MOBILE & TABLET ADJUSTMENTS --- */
     
+    /* Tablet (Portrait iPad or similar) */
+    @media (max-width: 900px) {
+        .grid {
+            grid-template-columns: repeat(6, 1fr); /* 6x6 grid */
+            max-width: 600px;
+        }
+    }
+
+    /* Phone (Mobile) */
+    @media (max-width: 600px) {
+        .grid {
+            /* 4 columns (Phone Keyboard / Numpad style) */
+            grid-template-columns: repeat(4, 1fr); 
+            max-width: 100%; /* Use full screen width */
+        }
+        
+        .ipa-btn {
+            font-size: 1.8rem; /* Make text larger on mobile */
+            border-radius: 8px; /* Softer corners on mobile */
+        }
+    }
+
     audio { display: none; }
     
     .disclaimer {
         text-align: center;
         font-size: 0.7rem;
         color: #888;
-        padding: 10px;
-        margin-top: auto; /* Keeps it at the bottom if content is short */
+        padding: 15px;
     }
-    
-    .header-right { 
-        position: absolute; 
-        top: 15px; 
-        right: 15px; 
-    }
-    
-    .nav-btn {
-        background: #3498db; color: white; text-decoration: none; border: none;
-        padding: 8px 16px; border-radius: 4px; font-size: 0.9rem; transition: background 0.2s; white-space: nowrap;
-    }
-    .nav-btn:hover { background: #2980b9; }
 </style>
 </head>
 <body>
 
-<h1>ʔayʔaǰuθəm soundboard</h1>
-<div class="header-right">
-    <a href="../" class="nav-btn">Ayalingo</a>
-</div>
-<div class="grid" id="board"></div>
+<header>
+    <h1>ʔayʔaǰuθəm</h1>
+    <div class="header-right">
+        <a href="index.html" class="nav-btn">Ayalingo</a>
+    </div>
+</header>
 
-<p class="disclaimer">for any corrections or suggestions, email dominic fode at homalco dot com</p>
+<div class="grid-container">
+    <div class="grid" id="board"></div>
+    <p class="disclaimer">for any corrections or suggestions, email dominic fode at homalco dot com</p>
+</div>
 
 <script>
 const ipaList = [
-  // format: ["IPA char", "audio URL (.mp3)"]
   ["ʔ",   "https://upload.wikimedia.org/wikipedia/commons/transcoded/4/4d/Glottal_stop.ogg/Glottal_stop.ogg.mp3"],
   ["a",   "https://upload.wikimedia.org/wikipedia/commons/transcoded/0/0e/PR-open_front_unrounded_vowel.ogg/PR-open_front_unrounded_vowel.ogg.mp3"],
   ["e",   "https://upload.wikimedia.org/wikipedia/commons/transcoded/6/6c/Close-mid_front_unrounded_vowel.ogg/Close-mid_front_unrounded_vowel.ogg.mp3"],
@@ -149,7 +204,3 @@ ipaList.forEach(([sym, url]) => {
 
 </body>
 </html>
-
-
-
-

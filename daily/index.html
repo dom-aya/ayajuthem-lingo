@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>ʔayʔaǰuθəm today</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
     body, button, select, input, h1, h2, h3, h4, div, span, p, li, a {
@@ -11,33 +12,52 @@
     a { color: #2980b9; text-decoration: none; border-bottom: 1px dotted #2980b9; }
     a:hover { border-bottom: 1px solid #2980b9; }
 
-    .task-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
-    .task-text { font-size: 3rem; color: #7f8c8d; font-weight: 600; margin-bottom: 20px; }
-    /* Ensure images/iframes in the main card fit within the box */
-    .task-text iframe, .task-text img { max-width: 100%; border-radius: 8px; }
+    /* Base styles */
+    body { background:#f9f9fb; padding:20px; max-width:800px; margin:auto;}
     
-    .btn-group { display: flex; gap: 10px; justify-content: center; }
+    .task-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
+    
+    /* Responsive Text: Uses 'clamp' to scale between 1.5rem and 3rem depending on screen width */
+    .task-text { 
+        font-size: clamp(1.5rem, 5vw, 3rem); 
+        color: #7f8c8d; 
+        font-weight: 600; 
+        margin-bottom: 20px; 
+        line-height: 1.3;
+    }
+    
+    /* Ensure images/iframes in the main card fit within the box */
+    .task-text iframe, .task-text img { max-width: 100%; height: auto; border-radius: 8px; }
+    
+    .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    
     .all-tasks-list { display: none; text-align: left; background: #fff; padding: 20px; border-radius: 12px; }
     .all-tasks-list li { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
     
-    body { background:#f9f9fb; padding:20px; max-width:800px; margin:auto;}
 	h1 {font-size:2rem; text-align:center; color:#333;}
+    
 	.big-btn {
-    background:#fff; border:1px solid #ccc; border-radius:8px; padding:12px; text-align:center;
-    font-size:1.5rem; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.1);
-    transition:background .2s, transform .1s;
-  }
-  .big-btn:hover {background:#eef;}
-  header h2 { font-size:2rem; margin: 0; font-weight: 700; letter-spacing: 1px; text-align: center; grid-column: 2; }
-  .header-right { grid-column: 3; text-align: right; }
-  .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
-  .big-btn.secondary:active { box-shadow: none; }
-		
-  .nav-btn {
-        background: rgba(255,255,255,0.1); color: #ecf0f1; text-decoration: none;border: 1px solid rgba(255,255,255,0.2); 	
-		padding: 6px 12px; border-radius: 4px; font-size: 0.8rem; transition: background 0.2s;white-space: nowrap;
-  }
-  .nav-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+        background:#fff; border:1px solid #ccc; border-radius:8px; padding:12px 20px; text-align:center;
+        font-size:1.2rem; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.1);
+        transition:background .2s, transform .1s;
+        flex: 1; /* Allows buttons to grow evenly */
+        min-width: 120px; /* Prevents them from getting too squished */
+    }
+    .big-btn:hover {background:#eef;}
+    
+    header h2 { font-size:2rem; margin: 0 0 20px 0; font-weight: 700; letter-spacing: 1px; text-align: center; color: #2c3e50; }
+    
+    .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
+    .big-btn.secondary:active { box-shadow: none; }
+
+    /* MOBILE SPECIFIC ADJUSTMENTS */
+    @media (max-width: 600px) {
+        body { padding: 10px; }
+        .task-card { padding: 20px 15px; }
+        .big-btn { font-size: 1rem; padding: 12px 10px; }
+        header h2 { font-size: 1.5rem; }
+        #task-label { font-size: 0.9rem; }
+    }
 </style>
 </head>
 <body>
@@ -82,7 +102,6 @@
             const index = parseInt(seed) % allTasks.length;
             
             document.getElementById('task-label').innerText = "Today's Practice";
-            // CHANGED: Use innerHTML to render links and iframes
             document.getElementById('task-content').innerHTML = allTasks[index];
             document.getElementById('all-tasks').style.display = 'none';
         }
@@ -90,7 +109,6 @@
         function showRandom() {
             const index = Math.floor(Math.random() * allTasks.length);
             document.getElementById('task-label').innerText = "Random Practice";
-            // CHANGED: Use innerHTML to render links and iframes
             document.getElementById('task-content').innerHTML = allTasks[index];
         }
 
@@ -101,37 +119,31 @@
 
         function populateAllList() {
             const container = document.getElementById('list-container');
-            container.innerHTML = ''; // Clear existing to prevent duplicates if called twice
+            container.innerHTML = ''; 
             allTasks.forEach(task => {
                 const li = document.createElement('li');
-                // CHANGED: Use a helper to format the list item (convert embeds to links)
                 li.innerHTML = formatTaskForList(task);
                 container.appendChild(li);
             });
         }
 
-        // Converts iframes to links for the list view
+        // Helper: Converts iframes to links for the list view
         function formatTaskForList(taskHtml) {
-            // Create a temporary element to manipulate the HTML
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = taskHtml;
             
-            // Find all iframes
             const iframes = tempDiv.querySelectorAll('iframe');
             
             iframes.forEach(iframe => {
-                // Create a link replacement
                 const link = document.createElement('a');
                 link.href = iframe.src;
                 link.target = "_blank";
-                link.innerText = "Watch Video"; // Text to display
+                link.innerText = "Watch Video"; 
                 
-                // Styling for the replacement link
                 link.style.fontWeight = "bold";
                 link.style.display = "inline-block";
                 link.style.marginTop = "5px";
 
-                // Replace the iframe with the link
                 iframe.parentNode.replaceChild(link, iframe);
             });
 

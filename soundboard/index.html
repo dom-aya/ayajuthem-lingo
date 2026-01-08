@@ -11,6 +11,7 @@
         background: #f9f9fb;
         height: 100dvh;
         display: flex;
+		max-width: 800px
         flex-direction: column;
         /* Removed overflow: hidden from body so we can handle scrolling in the grid */
     }
@@ -22,8 +23,6 @@
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         gap: 12px;
         padding: 10px; /* Add padding so buttons don't touch edges */
-        
-        /* meaningful change: allows the grid to take available space and scroll internally */
         flex: 1;
         overflow-y: auto; 
     }
@@ -36,7 +35,6 @@
         }
         
         .ipa-btn {
-            /* Optional: Make buttons slightly larger/easier to tap on mobile */
             padding: 16px; 
             font-size: 2.2rem;
         }
@@ -80,7 +78,7 @@
 
 <h1>ʔayʔaǰuθəm soundboard</h1>
 <div class="header-right">
-    <a href="index.html" class="nav-btn">Ayalingo</a>
+    <a href="../index.html" class="nav-btn">Ayalingo</a>
 </div>
 <div class="grid" id="board"></div>
 

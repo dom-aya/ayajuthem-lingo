@@ -46,7 +46,7 @@
         .sidepanel a {
         padding: 8px 8px 8px 32px;
         text-decoration: none;
-        font-size: 25px;
+        font-size: 1.2rem;
         color: #ffffff;
         display: block;
         transition: 0.3s;
@@ -264,8 +264,8 @@
   <a href="/soundboard">Soundboard</a>
   <a href="/Today">Daily</a>
   <a href="/class">Resources</a>
-  <a onclick=""ShowCredits()>Acknowledgements</a>
-  <a onclick=""resetProgress()>Reset</a>
+  <a onclick="ShowCredits()">Acknowledgements</a>
+  <a onclick="resetProgress()">Reset</a>
 
 </div>
 
@@ -273,8 +273,6 @@
     <header>
         <div><button class="big-btn" onclick="openNav()">&#9776;</button></div> <h2>Ayalingo</h2>
         <div class="header-right">
-	        <a href="/soundboard" class="nav-btn">Sounds</a>
-            <a href="/daily" class="nav-btn">Today</a>
             <button id="exit-btn" class="exit-btn" onclick="exitLesson()">Exit</button>
         </div>
     </header>
@@ -294,8 +292,6 @@
         
         <div id="menu-view">
             <div id="menu-grid" class="menu-grid"></div>
-            <div class="reset-link" onclick="resetProgress()">Reset Progress</div>
-            <div class="credits-link" onclick="showCredits()">Acknowledgements</div>
         </div>
     </div>
 

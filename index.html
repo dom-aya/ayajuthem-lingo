@@ -265,7 +265,7 @@
         <a href="/soundboard">Soundboard</a>
         <a href="/daily">Daily</a>
         <a href="/class">Resources</a>
-        <a onclick="ShowCredits()">Acknowledgements</a>
+        <a onclick="showCredits()">Acknowledgements</a>
         <a onclick="resetProgress()">Reset</a>
     </div>
     <header>
@@ -450,7 +450,7 @@
 
     // --- MODAL LOGIC ---
     function showCredits() {
-        document.getElementById('credits-modal').style.display = 'block';
+        document.getElementById('credits-modal').style.display = 'fixed';
     }
 
     function hideCredits(e) {

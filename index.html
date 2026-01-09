@@ -236,7 +236,7 @@
 		  z-index: 1; /* Stay on top */
 		  top: 0;
 		  left: 0;
-		  background-color: #111; /* Black*/
+		  background-color: #2c3e50; /* Black*/
 		  overflow-x: hidden; /* Disable horizontal scroll */
 		  padding-top: 60px; /* Place content 60px from the top */
 		  transition: 0.5s; /* 0.5 second transition effect to slide in the sidebar */
@@ -253,9 +253,7 @@
 		}
 
 		/* When you mouse over the navigation links, change their color */
-		.sidebar a:hover {
-		  color: #f1f1f1;
-		}
+		.sidebar a:hover {background: rgba(255,255,255,0.2); color: white; }
 
 		/* Position and style the close button (top right corner) */
 		.sidebar .closebtn {
@@ -274,7 +272,7 @@
 		  left:25px;
 		  font-size: 20px;
 		  cursor: pointer;
-		  background-color: #111;
+		  background-color: #2c3e50;
 		  color: white;
 		  padding: 10px 15px;
 		  border: none;
@@ -314,8 +312,6 @@
     <header>
         <div></div> <h2>Ayalingo</h2>
         <div class="header-right">
-	        <a href="/soundboard" class="nav-btn">Sounds</a>
-            <a href="/daily" class="nav-btn">Today</a>
             <button id="exit-btn" class="exit-btn" onclick="exitLesson()">Exit</button>
         </div>
     </header>

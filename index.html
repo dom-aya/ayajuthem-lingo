@@ -28,7 +28,58 @@
             background: #f4f7f6; color: #333; 
             height: 100%; overflow: hidden; 
         }
-        
+
+        .sidepanel {
+        height: 250px; /* Specify a height */
+        width: 0; /* 0 width - change this with JavaScript */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Stay on top */
+        top: 0;
+        left: 0;
+        background-color: #2c3e50; /* Black*/
+        overflow-x: hidden; /* Disable horizontal scroll */
+        padding-top: 60px; /* Place content 60px from the top */
+        transition: 0.5s; /* 0.5 second transition effect to slide in the sidepanel */
+        }
+
+        /* The sidepanel links */
+        .sidepanel a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: #ffffff;
+        display: block;
+        transition: 0.3s;
+        }
+
+        /* When you mouse over the navigation links, change their color */
+        .sidepanel a:hover {
+        color: #27ae60;
+        }
+
+        /* Position and style the close button (top right corner) */
+        .sidepanel .closebtn {
+        position: absolute;
+        top: 0;
+        right: 25px;
+        font-size: 36px;
+        margin-left: 50px;
+        }
+
+        /* Style the button that is used to open the sidepanel */
+        .openbtn {
+        font-size: 20px;
+        cursor: pointer;
+        background-color: #2c3e50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        }
+
+        .openbtn:hover {
+        background-color: #4d6d8d;
+        }
+
         .container { 
             max-width: 800px; 
             height: 100%; 
@@ -231,10 +282,18 @@
     </style>
 </head>
 <body>
+    
+<div id="mySidepanel" class="sidepanel">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <a href="#">About</a>
+  <a href="#">Services</a>
+  <a href="#">Clients</a>
+  <a href="#">Contact</a>
+</div>
 
 <div class="container">
     <header>
-        <div></div> <h2>Ayalingo</h2>
+        <div><button class="big-btn" onclick="openNav()">&#9776;</button></div> <h2>Ayalingo</h2>
         <div class="header-right">
 	        <a href="/soundboard" class="nav-btn">Sounds</a>
             <a href="/daily" class="nav-btn">Today</a>
@@ -286,6 +345,13 @@
 </div>
 
 <script>
+
+    function openNav() {
+    if (document.getElementById("mySidepanel").style.width != "250px") document.getElementById("mySidepanel").style.width = "250px";
+    else document.getElementById("mySidepanel").style.width = "0"
+    };
+
+
     // --- STATE ---
     let lessonManifest = []; 
     let state = {

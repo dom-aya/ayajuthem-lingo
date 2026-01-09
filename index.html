@@ -38,7 +38,7 @@
         left: 0;
         background-color: #2c3e50; /* Black*/
         overflow-x: hidden; /* Disable horizontal scroll */
-        padding-top: 60px; /* Place content 60px from the top */
+        padding-top: 93px; /* Place content 60px from the top */
         transition: 0.5s; /* 0.5 second transition effect to slide in the sidepanel */
         }
 
@@ -55,29 +55,6 @@
         /* When you mouse over the navigation links, change their color */
         .sidepanel a:hover {
         color: #27ae60;
-        }
-
-        /* Position and style the close button (top right corner) */
-        .sidepanel .closebtn {
-        position: absolute;
-        top: 0;
-        right: 25px;
-        font-size: 36px;
-        margin-left: 50px;
-        }
-
-        /* Style the button that is used to open the sidepanel */
-        .openbtn {
-        font-size: 20px;
-        cursor: pointer;
-        background-color: #2c3e50;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        }
-
-        .openbtn:hover {
-        background-color: #4d6d8d;
         }
 
         .container { 
@@ -284,11 +261,12 @@
 <body>
     
 <div id="mySidepanel" class="sidepanel">
-  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-  <a href="#">About</a>
-  <a href="#">Services</a>
-  <a href="#">Clients</a>
-  <a href="#">Contact</a>
+  <a href="/soundboard">Soundboard</a>
+  <a href="/Today">Daily</a>
+  <a href="/class">Resources</a>
+  <a onclick=""ShowCredits()>Acknowledgements</a>
+  <a onclick=""resetProgress()>Reset</a>
+
 </div>
 
 <div class="container">

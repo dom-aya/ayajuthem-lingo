@@ -51,7 +51,7 @@
         }
         header h2 { margin: 0; font-weight: 700; letter-spacing: 1px; text-align: center; grid-column: 2; }
         .header-right { grid-column: 3; text-align: right; }
-		.header-left { grid-column: 1; text-align: right; }
+		.header-left { grid-column: 1; text-align: left; }
 
         .exit-btn {
             background: rgba(255,255,255,0.1); color: #ecf0f1; border: 1px solid rgba(255,255,255,0.2); 
@@ -234,7 +234,7 @@
 		  height: 100%; /* 100% Full-height */
 		  width: 0; /* 0 width - change this with JavaScript */
 		  position: fixed; /* Stay in place */
-		  z-index: 1; /* Stay on top */
+		  z-index: 2; /* Stay on top */
 		  top: 0;
 		  left: 0;
 		  background-color: #2c3e50; /* Black*/
@@ -257,7 +257,7 @@
 		.sidebar a:hover {background: rgba(255,255,255,0.2); color: white; }
 
 		/* The button used to open the sidebar */
-		.openbtn {
+		.open-btn {
 		  position: absolute;
 		  z-index: 1;
 		  top: 0;
@@ -270,7 +270,7 @@
 		  border: none;
 		}
 
-		.openbtn:hover {background: rgba(255,255,255,0.2); color: white; }
+		.open-btn:hover {background: rgba(255,255,255,0.2); color: white; }
 
 		/* Style page content - use this if you want to push the page content to the right when you open the side navigation */
 		#main {
@@ -299,7 +299,10 @@
 <div class="container">
     <header>
         <div></div> <h2>Ayalingo</h2>
-		<button class="header-left" onclick="openNav()">☰</button> 
+		 <div class="header-right">
+            <button class="open-btn" onclick="openNav()">☰</button> 
+        </div>
+
         <div class="header-right">
             <button id="exit-btn" class="exit-btn" onclick="exitLesson()">Exit</button>
         </div>

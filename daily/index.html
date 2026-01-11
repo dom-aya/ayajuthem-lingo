@@ -3,46 +3,83 @@
 <head>
     <title>ʔayʔaǰuθəm today</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../style.css">
+
+<style>
+    body, button, select, input, h1, h2, h3, h4, div, span, p, li, a {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+        }
+    /* Add specific link styling */
+    a { color: #2980b9; text-decoration: none; border-bottom: 1px dotted #2980b9; }
+    a:hover { border-bottom: 1px solid #2980b9; }
+
+    /* Base styles */
+    body { background:#f9f9fb; padding:20px; max-width:800px; margin:auto;}
+    
+    .task-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; margin-bottom: 20px; }
+    
+    /* Responsive Text: Uses 'clamp' to scale between 1.5rem and 3rem depending on screen width */
+    .task-text { 
+        font-size: clamp(1.5rem, 5vw, 3rem); 
+        color: #7f8c8d; 
+        font-weight: 600; 
+        margin-bottom: 20px; 
+        line-height: 1.3;
+    }
+    
+    /* Ensure images/iframes in the main card fit within the box */
+    .task-text iframe, .task-text img { max-width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius: 8px; }
+    
+    .btn-group { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    
+    .all-tasks-list { display: none; text-align: left; background: #fff; padding: 20px; border-radius: 12px; }
+    .all-tasks-list li { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+    
+	h1 {font-size:2rem; text-align:center; color:#333;}
+    
+	.big-btn {
+        background:#fff; border:1px solid #ccc; border-radius:8px; padding:12px 20px; text-align:center;
+        font-size:1.2rem; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,.1);
+        transition:background .2s, transform .1s;
+        flex: 1; /* Allows buttons to grow evenly */
+        min-width: 120px; /* Prevents them from getting too squished */
+    }
+    .big-btn:hover {background:#eef;}
+    
+    header h2 { font-size:2rem; margin: 0 0 20px 0; font-weight: 700; letter-spacing: 1px; text-align: center; color: #2c3e50; }
+    
+    .big-btn.secondary { background: white; color: #7f8c8d; border: 1px solid #ccc; box-shadow: 0 4px 0 #ddd; }
+    .big-btn.secondary:active { box-shadow: none; }
+
+    /* MOBILE SPECIFIC ADJUSTMENTS */
+    @media (max-width: 600px) {
+        body { padding: 10px; }
+        .task-card { padding: 20px 15px; }
+        .big-btn { font-size: 1rem; padding: 12px 10px; }
+        header h2 { font-size: 1.5rem; }
+        #task-label { font-size: 0.9rem; }
+    }
+</style>
 </head>
 <body>
-    
-<div class="app-layout">
-    <nav class="sidebar">
-        <div class="sidebar-header">Ayalingo</div>
-        <div class="nav-links">
-            <a href="../" class="nav-item">Lessons</a>
-            <a href="../soundboard/" class="nav-item">Soundboard</a>
-            <a href="./" class="nav-item active">Daily Practice</a>
-        </div>
-    </nav>
-
-    <main class="main-content">
-        <div class="page-container">
-            <header class="page-header">
-                <h2>Daily Practice</h2>
-            </header>
-
-            <div class="scroll-viewport">
-                <div id="task-display" class="task-card">
-                    <p id="task-label" style="text-transform: uppercase; color: #2c3e50; font-weight: bold; font-size: 1.5rem">Today's Practice</p>
-                    <div id="task-content" class="task-text">Loading...</div>
-                    
-                    <div class="btn-group">
-                        <button class="big-btn secondary" onclick="showRandom()">Random</button>
-                        <button class="big-btn" onclick="showDaily()">Today</button>
-                        <button class="big-btn secondary" onclick="toggleAll()">Show All</button>
-                    </div>
-                </div>
-
-                <div id="all-tasks" class="all-tasks-list">
-                    <h3>All Practices</h3>
-                    <ul id="list-container"></ul>
-                </div>
+    <div class="container">
+        <header><h2>Daily ʔayʔaǰuθəm Practice</h2></header>
+        
+        <div id="task-display" class="task-card">
+            <p id="task-label" style="text-transform: uppercase; color: #2c3e50; font-weight: bold; font-size: 1.5rem">Today's Practice</p>
+            <div id="task-content" class="task-text">Loading...</div>
+            
+            <div class="btn-group">
+                <button class="big-btn secondary" onclick="showRandom()">Random</button>
+				<button class="big-btn" onclick="showDaily()">Today</button>
+                <button class="big-btn secondary" onclick="toggleAll()">Show All</button>
             </div>
         </div>
-    </main>
-</div>
+
+        <div id="all-tasks" class="all-tasks-list">
+            <h3>All Practices</h3>
+            <ul id="list-container"></ul>
+        </div>
+    </div>
 
     <script>
         let allTasks = [];

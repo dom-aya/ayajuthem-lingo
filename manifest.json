@@ -4,6 +4,10 @@
     "title": "Greetings"
   },
   {
+    "file": "assets/lessons/03_breakfast.csv",
+    "title": "What's for breakfast?"
+  },
+  {
     "file": "assets/lessons/04_Christmas.csv",
     "title": "Christmas"
   },

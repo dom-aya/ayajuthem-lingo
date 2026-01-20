@@ -256,6 +256,50 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+		
+		/* SIDEBAR TOGGLE STYLES */
+		.settings-container {
+		padding: 8px 8px 8px 32px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		color: white;
+		font-size: 1.2rem;
+		padding-right: 20px;
+		}
+
+		.switch {
+		position: relative;
+		display: inline-block;
+		width: 40px;
+		height: 22px;
+		}
+
+		.switch input { opacity: 0; width: 0; height: 0; }
+
+		.slider {
+		position: absolute;
+		cursor: pointer;
+		top: 0; left: 0; right: 0; bottom: 0;
+		background-color: #ccc;
+		transition: .4s;
+		border-radius: 34px;
+		}
+
+		.slider:before {
+		position: absolute;
+		content: "";
+		height: 16px;
+		width: 16px;
+		left: 4px;
+		bottom: 3px;
+		background-color: white;
+		transition: .4s;
+		border-radius: 50%;
+		}
+
+		input:checked + .slider { background-color: var(--accent); }
+		input:checked + .slider:before { transform: translateX(16px); }
 
     </style>
 </head>
@@ -263,12 +307,21 @@
 
 <div class="container">
     <div id="mySidepanel" class="sidepanel">
-        <a href="/soundboard">Soundboard</a>
-        <a href="/daily">Daily</a>
-        <a href="/class">Resources</a>
-        <a onclick="showCredits()">Acknowledgements</a>
-        <a onclick="resetProgress()">Reset</a>
+    <a href="/soundboard">Soundboard</a>
+    <a href="/daily">Daily</a>
+    <a href="/class">Resources</a>
+    
+    <div class="settings-container">
+        <span>Narrator</span>
+        <label class="switch">
+            <input type="checkbox" id="narrator-toggle" checked onchange="toggleNarrator()">
+            <span class="slider round"></span>
+        </label>
     </div>
+
+    <a onclick="showCredits()">Acknowledgements</a>
+    <a onclick="resetProgress()">Reset</a>
+	</div>
     <header>
         <div><button class="big-btn" onclick="openNav()">&#9776;</button></div> <h2>ayalingo</h2>
         <div class="header-right">
@@ -340,9 +393,21 @@
         slideIndex: 0
     };
 
-    let autoPlayActive = false; 
-    let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
-    let pendingAudioCallback = null; 
+	let autoPlayActive = false; 
+	let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
+
+	// NEW: Load narrator preference (default to true)
+	let narratorEnabled = JSON.parse(localStorage.getItem('ayalingo_narrator') !== null ? localStorage.getItem('ayalingo_narrator') : 'true');
+
+	// NEW: Toggle Function
+	function toggleNarrator() {
+		narratorEnabled = document.getElementById('narrator-toggle').checked;
+		localStorage.setItem('ayalingo_narrator', narratorEnabled);
+		if (!narratorEnabled) cancelTTS();
+	}
+    let pendingAudioCallback = null;
+	
+	
     
     // --- TOUCH SUPPORT ---
     let touchStartX = 0;
@@ -370,18 +435,22 @@
     }
 
     // --- INITILIZATION LOADING MANIFEST ---
-    window.onload = () => { 
-        fetch('manifest.json')
-            .then(response => response.json())
-            .then(data => {
-                lessonManifest = data;
-                renderMenu(); 
-            })
-            .catch(err => {
-                console.error("Could not load manifest.json", err);
-                document.getElementById('menu-grid').innerHTML = "<p>Error loading lessons.</p>";
-            });
-    };
+	window.onload = () => { 
+		// NEW: Set toggle state based on saved preference
+		const toggleEl = document.getElementById('narrator-toggle');
+		if(toggleEl) toggleEl.checked = narratorEnabled;
+
+		fetch('manifest.json')
+			.then(response => response.json())
+			.then(data => {
+				lessonManifest = data;
+				renderMenu(); 
+			})
+			.catch(err => {
+				console.error("Could not load manifest.json", err);
+				document.getElementById('menu-grid').innerHTML = "<p>Error loading lessons.</p>";
+			});
+	};
 
     // --- MENU LOGIC ---
     function renderMenu() {
@@ -655,18 +724,34 @@
         document.querySelectorAll('.chat-row').forEach(r => r.classList.remove('active-playing'));
     }
 
-    function speak(text, callback) {
-        cancelTTS(); 
-        if (!window.speechSynthesis) return;
-        pendingAudioCallback = callback;
-        const u = new SpeechSynthesisUtterance(text);
-        u.rate = 0.95;
-        const voices = window.speechSynthesis.getVoices();
-        const fVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English'));
-        if (fVoice) u.voice = fVoice;
-        u.onend = () => { if (pendingAudioCallback) { pendingAudioCallback(); pendingAudioCallback = null; } };
-        window.speechSynthesis.speak(u);
-    }
+	function speak(text, callback) {
+		cancelTTS(); 
+
+		// NEW: Check preference
+		if (!narratorEnabled || !window.speechSynthesis) {
+			// If narrator is off, immediately run the callback (if one exists)
+			// so the app flow doesn't hang.
+			if (callback) callback();
+			return;
+		}
+
+		pendingAudioCallback = callback;
+		const u = new SpeechSynthesisUtterance(text);
+		u.rate = 0.95;
+		const voices = window.speechSynthesis.getVoices();
+		const fVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English'));
+		if (fVoice) u.voice = fVoice;
+		
+		// Safety: If for some reason onend doesn't fire, we don't want the app to hang forever
+		u.onend = () => { 
+			if (pendingAudioCallback) { 
+				pendingAudioCallback(); 
+				pendingAudioCallback = null; 
+			} 
+		};
+		
+		window.speechSynthesis.speak(u);
+	}
     function cancelTTS() { if (window.speechSynthesis) window.speechSynthesis.cancel(); pendingAudioCallback = null; }
     function skipTTS() { 
         if (window.speechSynthesis && window.speechSynthesis.speaking) {

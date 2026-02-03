@@ -4,6 +4,10 @@
     "title": "Greetings"
   },
   {
+    "file": "assets/lessons/07_Glad to see you.csv",
+    "title": "Glad to see you"
+  },
+  {
     "file": "assets/lessons/03_breakfast.csv",
     "title": "What's for breakfast?"
   },
@@ -15,7 +19,11 @@
     "file": "assets/lessons/05_What are you doing tonight.csv",
     "title": "What are you doing tonight?"
   },
-    {
+  {
+    "file": "assets/lessons/06_Going to the store.csv",
+    "title": "Going to the store"
+  },
+  {
     "file": "assets/lessons/story_01_deer.csv",
     "title": "Story: Deer & Rain"
   }

@@ -12,12 +12,16 @@
     "title": "What's for breakfast?"
   },
   {
-    "file": "assets/lessons/04_Christmas.csv",
-    "title": "Christmas"
+    "file": "assets/lessons/08_outside.csv",
+    "title": "What is it like outside?"
   },
   {
     "file": "assets/lessons/05_What are you doing tonight.csv",
     "title": "What are you doing tonight?"
+  },
+  {
+    "file": "assets/lessons/04_Christmas.csv",
+    "title": "Christmas"
   },
   {
     "file": "assets/lessons/story_01_deer.csv",

@@ -20,6 +20,10 @@
     "title": "What are you doing tonight?"
   },
   {
+    "file": "assets/lessons/09_When were you born.csv",
+    "title": "When were you born?"
+  },
+  {
     "file": "assets/lessons/04_Christmas.csv",
     "title": "Christmas"
   },

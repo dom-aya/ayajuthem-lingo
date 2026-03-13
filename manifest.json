@@ -24,6 +24,10 @@
     "title": "When were you born?"
   },
   {
+    "file": "assets/lessons/10_where were you born.csv",
+    "title": "Where were you born?"
+  },
+  {
     "file": "assets/lessons/04_Christmas.csv",
     "title": "Christmas"
   },

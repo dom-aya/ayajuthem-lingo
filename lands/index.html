@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indigenous Storytelling GIS Tool</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 1; }
+        
+        /* Essential Leaflet Overrides */
+        .leaflet-popup-content-wrapper { background: #1e293b; color: white; border: 1px solid #334155; border-radius: 8px; padding: 4px; }
+        .leaflet-popup-tip { background: #1e293b; }
+        .leaflet-container a.leaflet-popup-close-button { display: none; }
+
+        /* Marker Logic */
+        .marker-dot {
+            width: 16px; height: 16px; border: 2px solid #10b981; border-radius: 50%;
+            background: rgba(16, 185, 129, 0.1); transition: all 0.3s ease;
+        }
+        .marker-selected .marker-dot {
+            background: #10b981; border-color: white; transform: scale(1.4);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+        }
+
+        /* Rich Content Media */
+        .rich-content img, .rich-content iframe, .rich-content audio { width: 100%; border-radius: 8px; margin: 1rem 0; }
+        .rich-content audio { filter: invert(100%) hue-rotate(180deg) brightness(1.5); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 overflow-hidden">
+
+    <div class="flex h-screen w-full relative">
+        <!-- Sidebar -->
+        <aside class="w-96 h-full bg-slate-800 border-r border-slate-700 flex flex-col shadow-2xl z-[1000] relative overflow-hidden">
+            
+            <!-- List View -->
+            <div id="list-view" class="flex flex-col h-full transition-transform duration-300">
+                <div class="p-6 border-b border-slate-700 bg-slate-800/50">
+                    <h1 class="text-xl font-bold flex items-center gap-2 text-emerald-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                        Territory Stories
+                    </h1>
+                    <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold">Indigenous GIS Archive</p>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 space-y-8 scrollbar-hide">
+                    <section>
+                        <h2 class="text-[11px] font-bold text-slate-500 mb-4 px-2 uppercase tracking-tighter">Guided Lessons</h2>
+                        <div id="lessons-list" class="space-y-2"></div>
+                    </section>
+                    <section>
+                        <h2 class="text-[11px] font-bold text-slate-500 mb-4 px-2 uppercase tracking-tighter">Cultural Sites</h2>
+                        <div id="places-list" class="space-y-1"></div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- Detail View -->
+            <div id="detail-view" class="absolute inset-0 bg-slate-800 flex flex-col translate-x-full transition-transform duration-300 z-10">
+                <div class="p-4 border-b border-slate-700 flex items-center gap-3">
+                    <button id="back-to-map-btn" onclick="closeDetails()" class="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Back to Map</span>
+                </div>
+                <div id="detail-content" class="flex-1 overflow-y-auto p-6 rich-content text-slate-300"></div>
+            </div>
+
+            <!-- Tour Footer -->
+            <div id="lesson-footer" class="hidden p-4 bg-slate-900 border-t border-slate-700 z-20">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider" id="lesson-name">Current Lesson</span>
+                    <span class="text-[10px]" id="lesson-counter"></span>
+                </div>
+                <div class="w-full bg-slate-700 h-1 rounded-full mb-4">
+                    <div id="lesson-progress-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-500"></div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <div class="flex gap-2">
+                        <button id="prev-btn" onclick="prevStep()" class="flex-1 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 rounded text-[10px] font-bold uppercase flex items-center justify-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                            Prev
+                        </button>
+                        <button id="next-btn" onclick="nextStep()" class="flex-[2] px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded text-[10px] font-bold flex items-center justify-center gap-1 uppercase">
+                            Next Site
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                    </div>
+                    <button onclick="exitLesson()" class="w-full py-1 text-slate-500 hover:text-white text-[9px] font-bold uppercase tracking-widest transition-colors">Exit Tour</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Map Container -->
+        <main class="flex-1 relative">
+            <div id="map"></div>
+            <div id="welcome-msg" class="absolute bottom-10 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3 transition-opacity duration-700 z-[1001] pointer-events-none">
+                <svg class="text-emerald-400" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <p class="text-sm font-medium">Explore traditional sites and territory lessons.</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const PLACES_DATA = [
+            { id: 1, name: "Teššošum", coords: [-124.621, 49.885], html: `<h3 class="text-emerald-400 font-bold text-xl mb-2">Teššošum (Slippery Water)</h3><p class="mb-4">The main village site of the Tla'amin people.</p><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=1000"/><audio controls src="#"></audio>` },
+            { id: 4, name: "Xwésam", coords: [-125.247, 50.043], html: `<h3 class="text-emerald-400 font-bold text-xl mb-2">Xwésam (Fatty Place)</h3><p class="mb-4">Historically significant for the salmon run.</p><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>` },
+            { id: 7, name: "mɛʔp̓at̓ᶿəm", coords: [-124.660, 49.860], html: `<h3 class="text-emerald-400 font-bold text-xl mb-2">mɛʔp̓at̓ᶿəm (Harwood Island)</h3><p class="mb-4">An unceded reserve and sanctuary.</p><img src="https://images.unsplash.com/photo-1544198365-f5d60b6d8190?auto=format&fit=crop&q=80&w=1000"/>` },
+            { id: 9, name: "p̓aqačiƚ", coords: [-124.520, 49.910], html: `<h3 class="text-emerald-400 font-bold text-xl mb-2">p̓aqačiƚ (White Lake)</h3><p>Ancient submerged village sites.</p>` }
+        ];
+
+        const LESSONS = [{ id: 'heritage', title: "Tla'amin Heritage", points: [1, 7, 9] }, { id: 'river', title: "River Traditions", points: [4] }];
+
+        let map, activeLesson = null, currentStep = 0, markers = {}, currentSelectedId = null;
+        const toLatLng = (c) => [c[1], c[0]];
+
+        window.onload = function() {
+            map = L.map('map', { zoomControl: false, attributionControl: false }).setView(toLatLng([-124.7, 49.95]), 9);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', { pane: 'overlayPane' }).addTo(map);
+            L.control.zoom({ position: 'topright' }).addTo(map);
+
+            const lessonsList = document.getElementById('lessons-list');
+            const placesList = document.getElementById('places-list');
+
+            LESSONS.forEach(l => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3 rounded-xl bg-slate-700 hover:bg-slate-600 transition-colors flex justify-between items-center group";
+                btn.innerHTML = `<span class="text-sm font-medium">${l.title}</span><svg class="opacity-30 group-hover:opacity-100" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>`;
+                btn.onclick = () => startLesson(l);
+                lessonsList.appendChild(btn);
+            });
+
+            PLACES_DATA.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left px-3 py-2 rounded text-[13px] hover:bg-slate-700 text-slate-300 hover:text-white transition-colors flex items-center gap-2";
+                btn.innerHTML = `<svg class="text-emerald-500" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${p.name}`;
+                btn.onclick = () => selectPlace(p);
+                placesList.appendChild(btn);
+
+                const markerIcon = L.divIcon({ className: 'custom-marker', html: `<div class="marker-dot"></div>`, iconSize: [20, 20], iconAnchor: [10, 10] });
+                const marker = L.marker(toLatLng(p.coords), { icon: markerIcon }).addTo(map);
+                markers[p.id] = marker;
+                marker.bindTooltip(p.name, { direction: 'top', offset: [0, -10], className: 'bg-slate-900 border-none text-white text-[10px]' });
+                marker.on('click', (e) => { L.DomEvent.stopPropagation(e); selectPlace(p); });
+            });
+
+            map.on('click', () => { if (currentSelectedId && !activeLesson) closeDetails(); });
+        };
+
+        function selectPlace(p) {
+            if (currentSelectedId && markers[currentSelectedId]) markers[currentSelectedId].getElement().classList.remove('marker-selected');
+            currentSelectedId = p.id;
+            markers[p.id].getElement().classList.add('marker-selected');
+            map.flyTo(toLatLng(p.coords), 14, { animate: true, duration: 2 });
+            document.getElementById('detail-content').innerHTML = p.html;
+            document.getElementById('list-view').classList.add('-translate-x-full');
+            document.getElementById('detail-view').classList.remove('translate-x-full');
+            document.getElementById('back-to-map-btn').style.display = activeLesson ? 'none' : 'block';
+            document.getElementById('welcome-msg').style.opacity = '0';
+        }
+
+        function closeDetails() {
+            if (currentSelectedId && markers[currentSelectedId]) markers[currentSelectedId].getElement().classList.remove('marker-selected');
+            currentSelectedId = null;
+            document.getElementById('list-view').classList.remove('-translate-x-full');
+            document.getElementById('detail-view').classList.add('translate-x-full');
+            if (!activeLesson) {
+                map.flyTo(toLatLng([-124.7, 49.95]), 9, { duration: 1.5 });
+                document.getElementById('welcome-msg').style.opacity = '1';
+            }
+        }
+
+        function startLesson(l) {
+            activeLesson = l; currentStep = 0;
+            document.getElementById('lesson-footer').classList.remove('hidden');
+            updateTour();
+        }
+
+        function updateTour() {
+            document.getElementById('lesson-name').innerText = activeLesson.title;
+            document.getElementById('lesson-counter').innerText = `${currentStep + 1} / ${activeLesson.points.length}`;
+            document.getElementById('lesson-progress-bar').style.width = `${((currentStep + 1) / activeLesson.points.length) * 100}%`;
+            document.getElementById('prev-btn').disabled = (currentStep === 0);
+            const nextBtn = document.getElementById('next-btn');
+            if (currentStep === activeLesson.points.length - 1) { nextBtn.innerText = "Finish"; nextBtn.onclick = exitLesson; }
+            else { nextBtn.innerHTML = `Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>`; nextBtn.onclick = nextStep; }
+            selectPlace(PLACES_DATA.find(p => p.id === activeLesson.points[currentStep]));
+        }
+
+        function nextStep() { currentStep++; updateTour(); }
+        function prevStep() { currentStep--; updateTour(); }
+        function exitLesson() { activeLesson = null; document.getElementById('lesson-footer').classList.add('hidden'); closeDetails(); }
+    </script>
+</body>
+</html>

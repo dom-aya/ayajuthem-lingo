@@ -1,11 +1,11 @@
 ﻿type,audio_url,image_url,english,ayajuthem,speaker,narrator_text
-c,assets/audio/ch2/01-mab_are_you_well.mp3,,are you well,ʔaǰɛcxʷot,Mabel,
+c,assets/audio/ch2/01-mab_are_you_well.mp3,,are you well,ʔaǰɛčxʷot,Mabel,
 c,assets/audio/ch2/02-l_I'm_fine.mp3,,I'm fine,ʔi čɛnʔot  čɩnɛ,Lawrence,
 c,assets/audio/ch2/03-l_how_about_you.mp3,,how about you,čɩm ga nɩgɩ,Lawrence,
 c,assets/audio/ch2/04-mab_very_good.mp3,,very good,ʔimot,Mabel,
-p,assets/audio/ch2/06-mab_are_you_well.mp3,,are you well,ʔaǰɛcxʷot,Mabel,
+p,assets/audio/ch2/06-mab_are_you_well.mp3,,are you well,ʔaǰɛčxʷot,Mabel,
 n,,,,,,"ʔaǰɛčxʷot means ""Are you well?"", and it is used in conversation with the same function as ""How are you?"". It is customary to respond in the same way."
-r,assets/audio/ch2/06-mab_are_you_well.mp3,,are you well,ʔaǰɛcxʷot,Mabel,
+r,assets/audio/ch2/06-mab_are_you_well.mp3,,are you well,ʔaǰɛčxʷot,Mabel,
 p,assets/audio/ch2/05-mab_I'm_fine.mp3,,I'm fine,ʔi čɛnʔot čɩnɛ,Mabel,
 p,assets/audio/ch2/07-mab_good.mp3,,fine/good,ʔi,Mabel,
 r,assets/audio/ch2/09-mab_very_good.mp3,,very good,ʔimot,Mabel,

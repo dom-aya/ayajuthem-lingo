@@ -30,6 +30,10 @@
     {
     "file": "assets/lessons/11_how_old.csv",
     "title": "How old is he?"
+  },   
+  {
+    "file": "assets/lessons/13_babysitting.csv",
+    "title": "Babysitting"
   },
   {
     "file": "assets/lessons/14_newboat.csv",

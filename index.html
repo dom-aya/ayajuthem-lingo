@@ -397,7 +397,7 @@
 	let completedLessons = JSON.parse(localStorage.getItem('ayalingo_progress')) || [];
 
 	// NEW: Load narrator preference (default to true)
-	let narratorEnabled = JSON.parse(localStorage.getItem('ayalingo_narrator') !== null ? localStorage.getItem('ayalingo_narrator') : 'true');
+	let narratorEnabled = JSON.parse(localStorage.getItem('ayalingo_narrator') !== null ? localStorage.getItem('ayalingo_narrator') : 'false');
 
 	// NEW: Toggle Function
 	function toggleNarrator() {
